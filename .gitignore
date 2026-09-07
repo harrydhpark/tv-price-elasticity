@@ -1,0 +1,25 @@
+# Large syndicated market raw data files (GitHub 100MB limit & confidentiality)
+DATA/*.xlsb
+DATA/*.xlsx
+DATA/~$*
+*.xlsb
+*.xlsx
+
+# Python & Environment
+__pycache__/
+*.py[cod]
+*$py.class
+*.env
+.venv/
+env/
+venv/
+
+# Playwright & Browser test artifacts
+.playwright-mcp/
+test-results/
+
+# Temporary and system files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db
