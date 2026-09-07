@@ -2439,6 +2439,71 @@
       renderDiagnosticsTable();
     }
 
+    const barDiffLabelPlugin = {
+      id: 'barDiffLabel',
+      afterDatasetsDraw(chart, args, options) {
+        const { ctx } = chart;
+        const meta = chart.getDatasetMeta(1); // 2nd dataset: '27년 1분기 예상'
+        if (!meta || meta.hidden) return;
+
+        const diffList = options?.diffList;
+        if (!diffList) return;
+
+        ctx.save();
+        ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+
+        meta.data.forEach((bar, i) => {
+          if (diffList[i] === undefined || diffList[i] === null) return;
+          const val = diffList[i];
+          const rounded = Math.round(val);
+          const sign = rounded > 0 ? '+' : '';
+          const text = `${sign}${rounded}%`;
+
+          const x = bar.x;
+          const y = bar.y - 6;
+
+          const textWidth = ctx.measureText(text).width;
+          const padX = 6;
+          const boxW = textWidth + (padX * 2);
+          const boxH = 18;
+          const boxX = x - (boxW / 2);
+          const boxY = y - boxH + 3;
+
+          let bg = 'rgba(148, 163, 184, 0.2)';
+          let border = 'rgba(148, 163, 184, 0.45)';
+          let textCol = '#94A3B8';
+
+          if (rounded > 0) {
+            bg = 'rgba(52, 211, 153, 0.22)';
+            border = 'rgba(52, 211, 153, 0.55)';
+            textCol = '#34D399';
+          } else if (rounded < 0) {
+            bg = 'rgba(248, 113, 113, 0.22)';
+            border = 'rgba(248, 113, 113, 0.55)';
+            textCol = '#F87171';
+          }
+
+          ctx.beginPath();
+          if (ctx.roundRect) {
+            ctx.roundRect(boxX, boxY, boxW, boxH, 4);
+          } else {
+            ctx.rect(boxX, boxY, boxW, boxH);
+          }
+          ctx.fillStyle = bg;
+          ctx.fill();
+          ctx.lineWidth = 1;
+          ctx.strokeStyle = border;
+          ctx.stroke();
+
+          ctx.fillStyle = textCol;
+          ctx.fillText(text, x, y + 1);
+        });
+        ctx.restore();
+      }
+    };
+
     function renderCharts(simResults) {
       const labels = SEG_ORDER.map(s => SEG_LABELS[s]);
       const meta = CASE_META[selectedCase] || CASE_META['c1'];
@@ -2449,12 +2514,15 @@
       const valBase = SEG_ORDER.map(s => (simResults[s].base.lg_eur / 1000000).toFixed(1));
       const valSim  = SEG_ORDER.map(s => (simResults[s][selectedCase].eur / 1000000).toFixed(1));
 
+      const yoyVolList = SEG_ORDER.map(s => simResults[s][selectedCase].yoyUnits);
+      const yoyValList = SEG_ORDER.map(s => simResults[s][selectedCase].yoyEur);
+
       const subVolEl = document.getElementById('chartVolSub');
       const subValEl = document.getElementById('chartValSub');
-      if (subVolEl) subVolEl.innerText = `26년 1Q 실적(Baseline) vs ${meta.name} 예측 수량 (단위: 천 대)`;
-      if (subValEl) subValEl.innerText = `26년 1Q 실적(Baseline) vs ${meta.name} 예측 매출액 (단위: 백만 유로, €M)`;
+      if (subVolEl) subVolEl.innerText = `26년 1Q 실적(Baseline) vs 27년 1분기 예상 수량 (단위: 천 대)`;
+      if (subValEl) subValEl.innerText = `26년 1Q 실적(Baseline) vs 27년 1분기 예상 매출액 (단위: 백만 유로, €M)`;
 
-      const chartOptions = {
+      const makeChartOptions = (diffList) => ({
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -2469,6 +2537,9 @@
             borderColor: '#334155',
             borderWidth: 1,
             titleFont: { weight: '700' }
+          },
+          barDiffLabel: {
+            diffList: diffList
           }
         },
         scales: {
@@ -2477,32 +2548,35 @@
             ticks: { color: '#94A3B8', font: { size: 11 } }
           },
           y: {
+            grace: '15%',
             grid: { color: 'rgba(51, 65, 85, 0.3)' },
             ticks: { color: '#94A3B8', font: { size: 11 } }
           }
         }
-      };
+      });
 
       const datasetsVol = [
         { label: '26년 1Q 실적', data: volBase, backgroundColor: '#64748B', borderRadius: 4 },
-        { label: `${meta.short} 예측`, data: volSim, backgroundColor: meta.color, borderRadius: 4 }
+        { label: '27년 1분기 예상', data: volSim, backgroundColor: meta.color, borderRadius: 4 }
       ];
       const datasetsVal = [
         { label: '26년 1Q 실적', data: valBase, backgroundColor: '#64748B', borderRadius: 4 },
-        { label: `${meta.short} 예측`, data: valSim, backgroundColor: meta.color, borderRadius: 4 }
+        { label: '27년 1분기 예상', data: valSim, backgroundColor: meta.color, borderRadius: 4 }
       ];
 
       // 1. Volume Chart
       if (chartVol) {
         chartVol.data.labels = labels;
         chartVol.data.datasets = datasetsVol;
+        chartVol.options.plugins.barDiffLabel = { diffList: yoyVolList };
         chartVol.update();
       } else {
         const ctxVol = document.getElementById('chartVolCases').getContext('2d');
         chartVol = new Chart(ctxVol, {
           type: 'bar',
           data: { labels, datasets: datasetsVol },
-          options: chartOptions
+          options: makeChartOptions(yoyVolList),
+          plugins: [barDiffLabelPlugin]
         });
       }
 
@@ -2510,13 +2584,15 @@
       if (chartVal) {
         chartVal.data.labels = labels;
         chartVal.data.datasets = datasetsVal;
+        chartVal.options.plugins.barDiffLabel = { diffList: yoyValList };
         chartVal.update();
       } else {
         const ctxVal = document.getElementById('chartValCases').getContext('2d');
         chartVal = new Chart(ctxVal, {
           type: 'bar',
           data: { labels, datasets: datasetsVal },
-          options: chartOptions
+          options: makeChartOptions(yoyValList),
+          plugins: [barDiffLabelPlugin]
         });
       }
     }
