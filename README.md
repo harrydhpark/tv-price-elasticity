@@ -43,11 +43,13 @@ $$\ln(Q_{LG, c, t}) = \alpha + \beta_1 \ln(P_{LG, c, t}) + \beta_2 \ln\left(\fra
    $$Q_{mkt}^{new} = Q_{mkt}^{base} \times (1 + g_{mkt})$$
 3. **Relative Price Premium Change ($\Delta \text{Premium}$)**:
    $$\Delta \text{Premium} = \frac{1 + \Delta P_{LG}}{1 + \Delta P_{comp}} - 1$$
-4. **LG Market Share Evolution ($MS_{LG}^{new}$)**:
-   $$MS_{LG}^{new} = MS_{LG}^{base} \times (1 + \gamma \times \Delta \text{Premium})$$
-5. **LG Projected Units & Revenue**:
-   $$Q_{LG}^{new} = Q_{mkt}^{new} \times MS_{LG}^{new}$$
+4. **LG Volume Growth & Brand Substitution Penalty ($g_{LG}$)**:
+   $$g_{LG} = g_{mkt} - (\eta_{switch} \times \Delta \text{Premium})$$
+   *(where $\eta_{switch}$ captures consumer brand switching: OLED 0.0, QNED 3.0, UHD 3.5, FHD 2.5)*
+5. **LG Projected Units, Revenue & Market Share**:
+   $$Q_{LG}^{new} = Q_{LG}^{base} \times (1 + g_{LG})$$
    $$\text{Revenue}_{LG}^{new} = Q_{LG}^{new} \times (ASP_{LG}^{base} \times (1 + \Delta P_{LG}))$$
+   $$MS_{LG}^{new} = \frac{Q_{LG}^{new}}{Q_{mkt}^{new}} \times 100\%$$
 
 ---
 

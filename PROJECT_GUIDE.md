@@ -84,13 +84,16 @@ LG전자가 2027년 1분기에 가격 인상($\Delta P_{LG}$)을 단행할 때, 
    $$Q_{mkt}^{new} = Q_{mkt}^{base} \times (1 + g_{mkt})$$
 3. **LG 상대가격 프리미엄 변동률 ($\Delta \text{Premium}$)**:
    $$\Delta \text{Premium} = \frac{1 + \Delta P_{LG}}{1 + \Delta P_{comp}} - 1$$
-4. **LG 수량 시장점유율 ($MS_{LG}^{new}$)**: 프리미엄 탄력성($\gamma$)을 반영한 단조 감소 모형
-   $$MS_{LG}^{new} = MS_{LG}^{base} \times (1 + \gamma \times \Delta \text{Premium})$$
-   *(Case 1에서는 $\Delta \text{Premium} = 0$이므로 $MS_{LG}^{new} = MS_{LG}^{base}$ 보존)*
-5. **최종 LG 판매수량 및 매출액 산출**:
-   $$Q_{LG}^{new} = Q_{mkt}^{new} \times MS_{LG}^{new}$$
+4. **LG 판매 성장률 및 브랜드 대체 페널티 ($g_{LG}$)**:
+   $$g_{LG} = g_{mkt} - (\eta_{switch} \times \Delta \text{Premium})$$
+   - $\eta_{switch}$ (브랜드 전환 탄력성): OLED 0.0, QNED 3.0, UHD 3.5, FHD 2.5
+   - Case 1 (100% 동등 인상): $\Delta \text{Premium} = 0 \implies g_{LG} = g_{mkt}$ (점유율 100% 보존)
+   - Case 2 (75% 인상) & Case 3 (50% 인상): 경쟁사 미추종으로 가격차가 벌어질수록 고객 이탈 페널티($\eta_{switch} \times \Delta \text{Premium}$)가 단조 증가하여 LG 판매수량이 Case 1 > Case 2 > Case 3 순으로 뚜렷하게 감소
+5. **최종 LG 판매수량, 매출액 및 시장점유율 산출**:
+   $$Q_{LG}^{new} = Q_{LG}^{base} \times (1 + g_{LG})$$
    $$ASP_{LG}^{new} = ASP_{LG}^{base} \times (1 + \Delta P_{LG})$$
    $$\text{Revenue}_{LG}^{new} = Q_{LG}^{new} \times ASP_{LG}^{new}$$
+   $$MS_{LG}^{new} = \frac{Q_{LG}^{new}}{Q_{mkt}^{new}} \times 100\%$$
 
 ---
 

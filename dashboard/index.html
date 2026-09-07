@@ -2301,20 +2301,18 @@
       return `<span class="badge-diff ${cls}">${sign}${val.toFixed(1)}%p</span>`;
     }
 
-    const msElasticityMap = {
-      'OLED': -1.8886,
-      'QNED_MiniLED': -1.7272,
-      'NanoCell_UHD': -2.0360,
-      'FHD': -1.2500
+    const switchSensitivityMap = {
+      'OLED': 0.0,            // OLED has 100% follow in all 3 cases
+      'QNED_MiniLED': 3.0,    // Premium LCD tier direct rivalry with Samsung Neo QLED
+      'NanoCell_UHD': 3.5,    // Mainstream mass volume segment, highly price-sensitive
+      'FHD': 2.5              // Entry replacement segment
     };
 
     function calculateCase(seg, baseRow, deltaPlg, followRate) {
       const bMkt = (simData.market_price_elasticity && simData.market_price_elasticity[seg])
                     ? simData.market_price_elasticity[seg].elasticity
                     : ((simData.models && simData.models[seg]) ? simData.models[seg].volume.elasticity : -1.5);
-      const gamma = (simData.models && simData.models[seg] && typeof simData.models[seg].ms_elasticity === 'number')
-                    ? simData.models[seg].ms_elasticity
-                    : (msElasticityMap[seg] || -1.5);
+      const etaSwitch = switchSensitivityMap[seg] || 3.0;
 
       const deltaPcomp = followRate * deltaPlg;
       const msBase = baseRow.market_share || 0.15;
@@ -2328,15 +2326,16 @@
       // Relative price premium change vs competitors directly
       const deltaPremium = ((1 + deltaPlg) / (1 + deltaPcomp)) - 1;
 
-      // Market Share change (Market Share Decomposition Model)
-      // When followRate = 1.0 (Case 1), deltaPremium = 0 -> simVolMs = msBase
-      // When followRate < 1.0 (Case 2, 3), deltaPremium > 0 -> simVolMs drops monotonically
-      const simVolMs = Math.max(0.1, Math.min(99.0, (msBase * (1 + gamma * deltaPremium)) * 100));
-
-      // Final LG Units & Revenue
-      const simUnits = Math.max(0, simMktUnits * (simVolMs / 100));
+      // LG Sales Growth Rate = Market Contraction - Brand Switching Penalty
+      // When followRate = 1.0 (Case 1), deltaPremium = 0 -> gLg = gMkt (M/S perfectly maintained)
+      // When followRate < 1.0 (Case 2, 3), deltaPremium > 0 -> gLg decreases monotonically (Case 1 > Case 2 > Case 3)
+      const gLg = gMkt - (etaSwitch * deltaPremium);
+      const simUnits = Math.max(0, baseRow.lg_units * (1 + gLg));
       const simAsp = Math.max(0, baseRow.asp_eur * (1 + deltaPlg));
       const simEur = simUnits * simAsp;
+
+      // Resulting Market Share in volume (%)
+      const simVolMs = simMktUnits > 0 ? (simUnits / simMktUnits) * 100 : (msBase * 100);
 
       const yoyUnits = baseRow.lg_units > 0 ? ((simUnits - baseRow.lg_units) / baseRow.lg_units) * 100 : 0;
       const yoyEur = baseRow.lg_eur > 0 ? ((simEur - baseRow.lg_eur) / baseRow.lg_eur) * 100 : 0;
