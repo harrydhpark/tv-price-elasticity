@@ -58,8 +58,7 @@ $$\ln(Q_{LG, c, t}) = \alpha + \beta_1 \ln(P_{LG, c, t}) + \beta_2 \ln\left(\fra
 - **Top Regression Diagnostics Table**: Immediate visibility into econometric indicators.
 - **Single-Select Interactive Radio Banner**: Switch seamlessly between Case 1, Case 2, and Case 3.
 - **1:1 Contrast Bar Charts**: 2026 Q1 actual vs. selected Case 2027 Q1 forecast for Volume and Value.
-- **Incremental Summary Table (Diff & YoY %)**: Clear breakdown of $\Delta$ Units (k) and $\Delta$ Revenue (€M).
-- **Comprehensive 3-Case Comparison Table**: Side-by-side comparison across all scenarios.
+- **Comprehensive 3-Case Comparison Table**: Side-by-side comparison across all scenarios with units, revenue, YoY %, ASP, and M/S.
 - **Quick Preset Buttons**: `[전체 +5% (기본)]`, `[차등 인상]`, `[0% (동결)]` with a zero-change alert banner.
 
 ---

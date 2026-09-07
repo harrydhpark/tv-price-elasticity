@@ -689,42 +689,7 @@ html_content = f'''<!DOCTYPE html>
         </div>
       </div>
 
-      <!-- 4. Selected Case Incremental Summary Table -->
-      <div class="table-card">
-        <div class="table-title-group">
-          <div>
-            <div class="table-title" id="singleCaseTableTitle">📋 [선택 시나리오] 2026 1Q 실적 대비 2027 1Q 수량·매출액 및 증분(Diff) 비교표</div>
-            <div class="table-sub">선택된 시나리오 기준 제품군별 26년 1분기 실적 대비 27년 1분기 예상 수량(천 대), 매출액(€M), 증분(Diff) 및 성장률 상세 분석</div>
-          </div>
-        </div>
-        <table class="styled-table" id="singleCaseTable">
-          <thead>
-            <tr>
-              <th rowspan="2" class="left">제품군 (Segment)</th>
-              <th colspan="4" style="text-align: center; border-left: 1px solid var(--border-color);">판매수량 (Units, 천 대)</th>
-              <th colspan="4" style="text-align: center; border-left: 2px solid var(--accent-blue);">매출액 (Sales Value, €M)</th>
-              <th colspan="2" style="text-align: center; border-left: 2px solid var(--accent-teal);">ASP & M/S</th>
-            </tr>
-            <tr>
-              <th style="border-left: 1px solid var(--border-color);">26년 1Q 실적</th>
-              <th>27년 1Q 예상</th>
-              <th>증감 (Diff)</th>
-              <th>YoY (%)</th>
-              <th style="border-left: 2px solid var(--accent-blue);">26년 1Q 실적</th>
-              <th>27년 1Q 예상</th>
-              <th>증감 (Diff)</th>
-              <th>YoY (%)</th>
-              <th style="border-left: 2px solid var(--accent-teal);">예상 ASP</th>
-              <th>예상 M/S</th>
-            </tr>
-          </thead>
-          <tbody id="singleCaseTableBody">
-            <!-- Dynamically populated -->
-          </tbody>
-        </table>
-      </div>
-
-      <!-- 5. All Cases Comprehensive Comparison Table (3대 케이스 전체 동시 비교) -->
+      <!-- 4. All Cases Comprehensive Comparison Table (3대 케이스 전체 동시 비교) -->
       <div class="table-card">
         <div class="table-title-group">
           <div>
@@ -1041,9 +1006,6 @@ html_content = f'''<!DOCTYPE html>
       // Render Charts (Baseline vs Selected Case)
       renderCharts(simResults);
 
-      // Render Selected Case Incremental Summary Table
-      renderSingleCaseTable(simResults, totalBase, totalCases);
-
       // Render Comprehensive Comparison Table (All Cases Always Visible)
       renderComprehensiveTable(simResults, totalBase, totalCases);
 
@@ -1132,83 +1094,6 @@ html_content = f'''<!DOCTYPE html>
         }});
       }}
     }}
-
-    function formatDiffNum(val, decimals = 1, prefix = '', suffix = '') {{
-      if (val === undefined || val === null || isNaN(val)) return '-';
-      const sign = val > 0.001 ? '+' : '';
-      const cls = val > 0.001 ? 'pos' : (val < -0.001 ? 'neg' : 'zero');
-      return `<span class="badge-diff ${{cls}}">${{sign}}${{prefix}}${{formatNum(val, decimals)}}${{suffix}}</span>`;
-    }}
-
-    function renderSingleCaseTable(simResults, totalBase, totalCases) {{
-      const meta = CASE_META[selectedCase] || CASE_META['c1'];
-      const titleEl = document.getElementById('singleCaseTableTitle');
-      if (titleEl) {{
-        titleEl.innerText = `📋 [${{meta.name}}] 2026 1Q 실적 대비 2027 1Q 수량·매출액 및 증분(Diff) 비교표`;
-      }}
-
-      const tbody = document.getElementById('singleCaseTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-
-      SEG_ORDER.forEach(seg => {{
-        const res = simResults[seg];
-        const b = res.base;
-        const cur = res[selectedCase];
-
-        const diffUnits = (cur.units - b.lg_units) / 1000;
-        const diffEur = (cur.eur - b.lg_eur) / 1000000;
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="left"><b>${{SEG_LABELS[seg]}}</b></td>
-          <td style="border-left: 1px solid var(--border-color);">${{formatNum(b.lg_units / 1000, 1)}}천</td>
-          <td style="font-weight: 700; color: ${{meta.color}};">${{formatNum(cur.units / 1000, 1)}}천</td>
-          <td>${{formatDiffNum(diffUnits, 1, '', '천')}}</td>
-          <td>${{formatYoY(cur.yoyUnits)}}</td>
-          
-          <td style="border-left: 2px solid var(--accent-blue);">${{formatNum(b.lg_eur / 1000000, 1)}}M</td>
-          <td style="font-weight: 700; color: ${{meta.color}};">€${{formatNum(cur.eur / 1000000, 1)}}M</td>
-          <td>${{formatDiffNum(diffEur, 1, '€', 'M')}}</td>
-          <td>${{formatYoY(cur.yoyEur)}}</td>
-
-          <td style="border-left: 2px solid var(--accent-teal);">€${{formatNum(cur.asp, 0)}}</td>
-          <td>${{cur.volMs.toFixed(1)}}% ${{formatDiffPP(cur.diffMs)}}</td>
-        `;
-        tbody.appendChild(tr);
-      }});
-
-      // Total Row
-      const curTotal = totalCases[selectedCase];
-      const curAsp = curTotal.units > 0 ? curTotal.eur / curTotal.units : 0;
-      const baseMs = totalBase.mktUnits > 0 ? (totalBase.units / totalBase.mktUnits) * 100 : 0;
-      const curMs = curTotal.mktUnits > 0 ? (curTotal.units / curTotal.mktUnits) * 100 : 0;
-
-      const totalDiffUnits = (curTotal.units - totalBase.units) / 1000;
-      const totalDiffEur = (curTotal.eur - totalBase.eur) / 1000000;
-      const totalYoYUnits = totalBase.units > 0 ? ((curTotal.units - totalBase.units) / totalBase.units) * 100 : 0;
-      const totalYoYEur = totalBase.eur > 0 ? ((curTotal.eur - totalBase.eur) / totalBase.eur) * 100 : 0;
-
-      const totalTr = document.createElement('tr');
-      totalTr.className = 'total-row';
-      totalTr.innerHTML = `
-        <td class="left"><b>전체 합계 (Total)</b></td>
-        <td style="border-left: 1px solid var(--border-color);">${{formatNum(totalBase.units / 1000, 1)}}천</td>
-        <td style="font-weight: 800; color: #FFF;">${{formatNum(curTotal.units / 1000, 1)}}천</td>
-        <td>${{formatDiffNum(totalDiffUnits, 1, '', '천')}}</td>
-        <td>${{formatYoY(totalYoYUnits)}}</td>
-        
-        <td style="border-left: 2px solid var(--accent-blue);">€${{formatNum(totalBase.eur / 1000000, 1)}}M</td>
-        <td style="font-weight: 800; color: #FFF;">€${{formatNum(curTotal.eur / 1000000, 1)}}M</td>
-        <td>${{formatDiffNum(totalDiffEur, 1, '€', 'M')}}</td>
-        <td>${{formatYoY(totalYoYEur)}}</td>
-
-        <td style="border-left: 2px solid var(--accent-teal);">€${{formatNum(curAsp, 0)}}</td>
-        <td>${{curMs.toFixed(1)}}% ${{formatDiffPP(curMs - baseMs)}}</td>
-      `;
-      tbody.appendChild(totalTr);
-    }}
-
     function renderComprehensiveTable(simResults, totalBase, totalCases) {{
       const tbody = document.getElementById('comparisonTableBody');
       if (!tbody) return;
