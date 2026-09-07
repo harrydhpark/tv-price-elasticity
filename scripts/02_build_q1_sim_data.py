@@ -13,31 +13,40 @@ OUT_JSON_PATH = os.path.join(DASHBOARD_DIR, "simulation_data.json")
 with open(RESULTS_18M_PATH, 'r', encoding='utf-8') as f:
     results_18m = json.load(f)
 
-# Market price elasticity stats
+# Market price elasticity stats (Controlled Panel OLS: ln(Market_Units) ~ ln(Market_ASP) + ln(Total_TV_Units) + TimeTrend + IsQ4 + Country_FE)
+# Resolves omitted variable bias where macro TV demand shifts and Black Friday holiday surges confounded pure price elasticity
 market_price_elasticity = {
     "OLED": {
-        "elasticity": -1.627655,
-        "p_value": 1.58e-08,
-        "bse": 0.287951,
-        "r2": 0.964184
+        "elasticity": -1.017160,
+        "p_value": 8.96e-10,
+        "bse": 0.161274,
+        "r2": 0.986007,
+        "total_tv_coeff": 0.824050,
+        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
     },
     "QNED_MiniLED": {
-        "elasticity": -1.845079,
-        "p_value": 2.53e-14,
-        "bse": 0.242133,
-        "r2": 0.959044
+        "elasticity": -0.562747,
+        "p_value": 1.12e-08,
+        "bse": 0.096071,
+        "r2": 0.991575,
+        "total_tv_coeff": 0.929727,
+        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
     },
     "NanoCell_UHD": {
-        "elasticity": -1.260353,
-        "p_value": 0.001176,
-        "bse": 0.388429,
-        "r2": 0.973300
+        "elasticity": -0.801876,
+        "p_value": 1.37e-09,
+        "bse": 0.128627,
+        "r2": 0.993040,
+        "total_tv_coeff": 0.848086,
+        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
     },
     "FHD": {
-        "elasticity": -1.482945,
-        "p_value": 0.000646,
-        "bse": 0.434698,
-        "r2": 0.975157
+        "elasticity": -0.587374,
+        "p_value": 0.008998,
+        "bse": 0.223525,
+        "r2": 0.987370,
+        "total_tv_coeff": 0.780905,
+        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
     }
 }
 

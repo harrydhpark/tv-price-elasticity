@@ -610,15 +610,15 @@ html_content = f'''<!DOCTYPE html>
         <div class="table-title-group">
           <div>
             <div class="table-title">🔬 회귀분석 모델 진단 & 통계 지표 (18개월 유럽 20개국 패널 OLS)</div>
-            <div class="table-sub">2025.01 ~ 2026.06 (18M) 실적 기반 · 다변량 Log-Log 계량경제 모형 추정치</div>
+            <div class="table-sub">2025.01 ~ 2026.06 (18M) 실적 기반 · 다변량 Log-Log 계량경제 모형 (유럽 TV 총수요 통제 계량경제 보정치 반영)</div>
           </div>
         </div>
         <table class="styled-table diag-table">
           <thead>
             <tr>
               <th class="left">제품군 (Segment)</th>
-              <th>자체 탄력성 (β₁)</th>
-              <th style="color: var(--accent-amber);">시장가격 탄력성 (β_mkt)</th>
+              <th title="LG 고유 기저 탄력성 (상대 프리미엄 및 시장규모 통제 기준). LG 단독 가격 인상 시 실질 민감도는 β₁+β₂">자체 탄력성 (β₁) ℹ️</th>
+              <th style="color: var(--accent-amber);" title="유럽 전체 TV 총수요(ln_total_tv)를 통제하여 계절/프로모션 왜곡을 교정한 패널 OLS 추정치">시장가격 탄력성 (β_mkt) ℹ️</th>
               <th>프리미엄 탄력성 (β₂)</th>
               <th>시장규모 탄력성 (β₃)</th>
               <th>유의수준 (p-value)</th>
@@ -772,10 +772,10 @@ html_content = f'''<!DOCTYPE html>
       'FHD': 'FHD 이하'
     }};
     const SEG_DESCRIPTIONS = {{
-      'OLED': '극비탄력적 (|β|<1) · 가격 인하 지양, 프리미엄 믹스 고수 전략 최적',
-      'QNED_MiniLED': '완만 탄력적 (|β|≈1.2) · 가격 인상 시 시장 축소 및 상대가격 효과 상쇄 균형',
-      'NanoCell_UHD': '탄력적 (|β|>1) · 대형 보급형 시장 가격 민감도 반영, 가격 경쟁력 유지 필수',
-      'FHD': '비탄력적 (|β|<1) · 엔트리 교체 수요 위주 시장 안정화'
+      'OLED': '비탄력 프리미엄 (|β_mkt|≈1.02) · 유럽 TV 총수요 통제 시 시장탄력성 -1.02, 기저탄력성 -0.26 (순수가격민감도 -0.96) · 100% 추종 시 매출 방어 최적',
+      'QNED_MiniLED': '완만 비탄력 (|β_mkt|≈0.56) · 총수요 통제 시장탄력성 -0.56 · 경쟁사 추종 시 시장 위축 미미, 프리미엄 믹스 확대',
+      'NanoCell_UHD': '완만 비탄력 (|β_mkt|≈0.80) · 보급형 대형 볼륨 시장 · 경쟁사 덜 인상 시 전환 민감도 유의',
+      'FHD': '비탄력 (|β_mkt|≈0.59) · 엔트리 교체 수요 위주 안정화 세그먼트'
     }};
 
     function initCountrySelect() {{
@@ -1245,10 +1245,10 @@ html_content = f'''<!DOCTYPE html>
       if (!simData || !simData.models) return;
 
       const defaultMktElast = {{
-        'OLED': -1.6277,
-        'QNED_MiniLED': -1.8451,
-        'NanoCell_UHD': -1.2604,
-        'FHD': -1.4829
+        'OLED': -1.0172,
+        'QNED_MiniLED': -0.5627,
+        'NanoCell_UHD': -0.8019,
+        'FHD': -0.5874
       }};
 
       SEG_ORDER.forEach(seg => {{
