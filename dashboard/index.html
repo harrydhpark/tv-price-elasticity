@@ -3,16 +3,77 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LG TV Europe — 2027년 1분기 가격 탄력성 시뮬레이터 (2026 Q1 vs 2027 Q1 예측)</title>
+  <title>회귀분석 모델 기반 LG TV 유럽 영업 가격 탄력성 시뮬레이터</title>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     :root {
+      /* Default: Projector-Optimized High-Contrast Light Theme */
+      --bg-main: #F1F5F9;
+      --bg-card: #FFFFFF;
+      --bg-card-subtle: #F8FAFC;
+      --bg-header: rgba(255, 255, 255, 0.97);
+      --border-color: #CBD5E1;
+      --border-subtle: #E2E8F0;
+      --text-main: #0F172A;
+      --text-muted: #475569;
+      --text-soft: #64748B;
+      --primary: #A50034;
+      --primary-hover: #C4003E;
+      --accent-blue: #0284C7;
+      --accent-green: #059669;
+      --accent-purple: #7C3AED;
+      --accent-amber: #D97706;
+      --accent-teal: #0D9488;
+      --danger: #DC2626;
+
+      --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+      --header-shadow: 0 1px 4px rgba(15, 23, 42, 0.08);
+      --badge-primary-bg: #FFE4E6;
+      --badge-primary-col: #BE123C;
+      --badge-primary-border: #FDA4AF;
+      --badge-blue-bg: #E0F2FE;
+      --badge-blue-col: #0369A1;
+      --badge-blue-border: #BAE6FD;
+      --table-th-bg: #F1F5F9;
+      --table-th-col: #0F172A;
+      --table-td-border: #E2E8F0;
+      --table-hover-bg: #F8FAFC;
+      --total-row-bg: #FFF1F2;
+      --total-row-col: #881337;
+      --range-bg: #CBD5E1;
+      --select-bg: #FFFFFF;
+      --info-box-bg: #F0F9FF;
+      --info-box-border: #BAE6FD;
+      --info-box-col: #334155;
+      --info-box-b: #0F172A;
+      --preset-bg: #F8FAFC;
+      --preset-col: #475569;
+      --preset-border: #CBD5E1;
+      --preset-hover-bg: #F1F5F9;
+      --preset-active-bg: #E0F2FE;
+      --preset-active-col: #0369A1;
+      --preset-active-border: #0284C7;
+      --case-hover-bg: #F8FAFC;
+      --case-inactive-bg: #F8FAFC;
+      --case-inactive-border: #E2E8F0;
+      --tooltip-bg: rgba(255, 255, 255, 0.98);
+      --tooltip-border: #0284C7;
+      --tooltip-col: #0F172A;
+      --tooltip-tip-bg: #F1F5F9;
+      --tooltip-shadow: 0 12px 28px -4px rgba(15, 23, 42, 0.18), 0 0 16px rgba(2, 132, 199, 0.15);
+    }
+
+    body.theme-dark {
       --bg-main: #0B0F19;
       --bg-card: #151C2C;
+      --bg-card-subtle: #121826;
+      --bg-header: rgba(21, 28, 44, 0.95);
       --border-color: #26334D;
+      --border-subtle: #1E283D;
       --text-main: #F1F5F9;
       --text-muted: #94A3B8;
+      --text-soft: #64748B;
       --primary: #A50034;
       --primary-hover: #C4003E;
       --accent-blue: #38BDF8;
@@ -21,6 +82,42 @@
       --accent-amber: #F59E0B;
       --accent-teal: #2DD4BF;
       --danger: #F87171;
+
+      --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      --header-shadow: none;
+      --badge-primary-bg: rgba(165, 0, 52, 0.2);
+      --badge-primary-col: #FDA4AF;
+      --badge-primary-border: rgba(165, 0, 52, 0.4);
+      --badge-blue-bg: rgba(56, 189, 248, 0.15);
+      --badge-blue-col: var(--accent-blue);
+      --badge-blue-border: rgba(56, 189, 248, 0.3);
+      --table-th-bg: #0E1422;
+      --table-th-col: #94A3B8;
+      --table-td-border: rgba(38, 51, 77, 0.5);
+      --table-hover-bg: rgba(38, 51, 77, 0.25);
+      --total-row-bg: rgba(165, 0, 52, 0.1);
+      --total-row-col: #FFF;
+      --range-bg: #2D3748;
+      --select-bg: #1E283D;
+      --info-box-bg: rgba(56, 189, 248, 0.05);
+      --info-box-border: rgba(56, 189, 248, 0.2);
+      --info-box-col: #94A3B8;
+      --info-box-b: #E2E8F0;
+      --preset-bg: #141c2c;
+      --preset-col: #94A3B8;
+      --preset-border: #2B3A55;
+      --preset-hover-bg: #1E2D48;
+      --preset-active-bg: rgba(56, 189, 248, 0.15);
+      --preset-active-col: var(--accent-blue);
+      --preset-active-border: var(--accent-blue);
+      --case-hover-bg: #1A2438;
+      --case-inactive-bg: #0d131f;
+      --case-inactive-border: #1E283D;
+      --tooltip-bg: rgba(15, 23, 42, 0.97);
+      --tooltip-border: rgba(56, 189, 248, 0.45);
+      --tooltip-col: #F8FAFC;
+      --tooltip-tip-bg: rgba(30, 41, 59, 0.85);
+      --tooltip-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.75), 0 0 18px rgba(56, 189, 248, 0.22);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -31,12 +128,14 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      transition: background-color 0.25s ease, color 0.25s ease;
     }
 
     header {
-      background-color: rgba(21, 28, 44, 0.95);
+      background-color: var(--bg-header);
       backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-color);
+      box-shadow: var(--header-shadow);
       padding: 0.85rem 2rem;
       display: flex;
       justify-content: space-between;
@@ -44,6 +143,7 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .header-left {
@@ -62,12 +162,13 @@
       font-weight: 800;
       font-size: 1.1rem;
       color: #fff;
-      box-shadow: 0 4px 12px rgba(165, 0, 52, 0.4);
+      box-shadow: 0 4px 12px rgba(165, 0, 52, 0.35);
     }
     .header-title-group h1 {
       font-size: 1.25rem;
       font-weight: 700;
       letter-spacing: -0.02em;
+      color: var(--text-main);
     }
     .header-title-group p {
       font-size: 0.78rem;
@@ -80,6 +181,29 @@
       gap: 0.6rem;
       align-items: center;
     }
+    .btn-theme {
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      color: var(--text-main);
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+      box-shadow: var(--card-shadow);
+      user-select: none;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-theme:hover {
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+      transform: translateY(-1px);
+    }
     .badge {
       padding: 0.35rem 0.75rem;
       border-radius: 9999px;
@@ -90,17 +214,17 @@
       gap: 0.4rem;
     }
     .badge-primary {
-      background-color: rgba(165, 0, 52, 0.2);
-      color: #FDA4AF;
-      border: 1px solid rgba(165, 0, 52, 0.4);
+      background-color: var(--badge-primary-bg);
+      color: var(--badge-primary-col);
+      border: 1px solid var(--badge-primary-border);
     }
     .badge-blue {
-      background-color: rgba(56, 189, 248, 0.15);
-      color: var(--accent-blue);
-      border: 1px solid rgba(56, 189, 248, 0.3);
+      background-color: var(--badge-blue-bg);
+      color: var(--badge-blue-col);
+      border: 1px solid var(--badge-blue-border);
     }
     .btn-fullscreen {
-      background: transparent;
+      background: var(--bg-card);
       border: 1px solid var(--border-color);
       color: var(--text-muted);
       padding: 0.4rem 0.8rem;
@@ -131,13 +255,16 @@
       gap: 1.2rem;
       overflow-y: auto;
       flex-shrink: 0;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
 
     .card {
-      background-color: #121826;
+      background-color: var(--bg-card-subtle);
       border: 1px solid var(--border-color);
       border-radius: 12px;
       padding: 1.1rem;
+      box-shadow: var(--card-shadow);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
     .card-title {
       font-size: 0.85rem;
@@ -169,13 +296,13 @@
     }
     .control-label {
       font-weight: 600;
-      color: #E2E8F0;
+      color: var(--text-main);
     }
     .control-val {
       font-weight: 700;
       font-size: 0.85rem;
-      color: var(--accent-blue);
-      background-color: rgba(56, 189, 248, 0.1);
+      color: var(--preset-active-col);
+      background-color: var(--preset-active-bg);
       padding: 2px 6px;
       border-radius: 4px;
     }
@@ -184,7 +311,7 @@
       width: 100%;
       height: 6px;
       border-radius: 3px;
-      background: #2D3748;
+      background: var(--range-bg);
       outline: none;
       -webkit-appearance: none;
     }
@@ -196,7 +323,7 @@
       background: var(--primary);
       cursor: pointer;
       border: 2px solid #FFF;
-      box-shadow: 0 0 8px rgba(165, 0, 52, 0.6);
+      box-shadow: 0 0 8px rgba(165, 0, 52, 0.5);
       transition: transform 0.1s;
     }
     input[type="range"]::-webkit-slider-thumb:hover {
@@ -205,7 +332,7 @@
 
     .select-custom {
       width: 100%;
-      background-color: #1E283D;
+      background-color: var(--select-bg);
       border: 1px solid var(--border-color);
       color: var(--text-main);
       padding: 0.55rem;
@@ -235,22 +362,22 @@
       transition: all 0.2s;
     }
     .btn-reset:hover {
-      background-color: rgba(239, 68, 68, 0.1);
+      background-color: rgba(220, 38, 38, 0.08);
       border-color: var(--danger);
       color: var(--danger);
     }
 
     .info-box {
-      background-color: rgba(56, 189, 248, 0.05);
-      border: 1px solid rgba(56, 189, 248, 0.2);
+      background-color: var(--info-box-bg);
+      border: 1px solid var(--info-box-border);
       border-radius: 8px;
       padding: 0.8rem;
       font-size: 0.75rem;
       line-height: 1.45;
-      color: #94A3B8;
+      color: var(--info-box-col);
     }
     .info-box b {
-      color: #E2E8F0;
+      color: var(--info-box-b);
     }
 
     .preset-group {
@@ -264,34 +391,37 @@
       font-size: 0.72rem;
       font-weight: 600;
       border-radius: 6px;
-      background-color: #141c2c;
-      border: 1px solid #2B3A55;
-      color: #94A3B8;
+      background-color: var(--preset-bg);
+      border: 1px solid var(--preset-border);
+      color: var(--preset-col);
       cursor: pointer;
       transition: all 0.2s;
       text-align: center;
     }
     .preset-btn:hover {
-      background-color: #1E2D48;
-      color: #F8FAFC;
-      border-color: #475569;
+      background-color: var(--preset-hover-bg);
+      color: var(--text-main);
+      border-color: var(--border-color);
     }
     .preset-btn.active {
-      background-color: rgba(56, 189, 248, 0.15);
-      border-color: var(--accent-blue);
-      color: var(--accent-blue);
+      background-color: var(--preset-active-bg);
+      border-color: var(--preset-active-border);
+      color: var(--preset-active-col);
       font-weight: 700;
     }
     .zero-notice {
       margin-top: 10px;
       padding: 8px 10px;
-      background-color: rgba(245, 158, 11, 0.12);
-      border: 1px solid rgba(245, 158, 11, 0.35);
+      background-color: rgba(217, 119, 6, 0.12);
+      border: 1px solid rgba(217, 119, 6, 0.35);
       border-radius: 6px;
       font-size: 0.72rem;
-      color: #FCD34D;
+      color: #B45309;
       line-height: 1.45;
       display: none;
+    }
+    body.theme-dark .zero-notice {
+      color: #FCD34D;
     }
 
     /* Main Content */
@@ -302,52 +432,55 @@
       display: flex;
       flex-direction: column;
       gap: 1.5rem;
+      background-color: var(--bg-main);
     }
 
-    /* Case Legend & Interactive Filter Banner */
-    .case-banner {
+    /* 3 Cases Columns Grid Layout */
+    .cases-columns-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.25rem;
+      align-items: stretch;
+    }
+    .case-column {
+      display: flex;
+      flex-direction: column;
       gap: 0.9rem;
     }
-    .case-card {
+    .case-card-header {
       background-color: var(--bg-card);
-      border: 1px solid var(--border-color);
+      border: 1.5px solid var(--border-color);
       border-radius: 10px;
       padding: 0.85rem 1.1rem;
       display: flex;
       align-items: center;
       gap: 0.8rem;
-      cursor: pointer;
-      user-select: none;
-      transition: all 0.2s ease;
+      box-shadow: var(--card-shadow);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
-    .case-card:hover {
-      border-color: rgba(255, 255, 255, 0.3);
-      background-color: #1A2438;
+    .case-card-header.c1 {
+      border-color: rgba(2, 132, 199, 0.45);
+      background: linear-gradient(180deg, rgba(2, 132, 199, 0.05) 0%, var(--bg-card) 100%);
     }
-    .case-card.active {
+    .case-card-header.c2 {
+      border-color: rgba(13, 148, 136, 0.45);
+      background: linear-gradient(180deg, rgba(13, 148, 136, 0.05) 0%, var(--bg-card) 100%);
+    }
+    .case-card-header.c3 {
+      border-color: rgba(217, 119, 6, 0.45);
+      background: linear-gradient(180deg, rgba(217, 119, 6, 0.05) 0%, var(--bg-card) 100%);
+    }
+    body.theme-dark .case-card-header.c1 {
       border-color: rgba(56, 189, 248, 0.5);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(180deg, rgba(56, 189, 248, 0.1) 0%, var(--bg-card) 100%);
     }
-    .case-card.inactive {
-      opacity: 0.38;
-      filter: grayscale(0.7);
-      background-color: #0d131f;
-      border-color: #1E283D;
+    body.theme-dark .case-card-header.c2 {
+      border-color: rgba(45, 212, 191, 0.5);
+      background: linear-gradient(180deg, rgba(45, 212, 191, 0.1) 0%, var(--bg-card) 100%);
     }
-    .case-card input[type="radio"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent-blue);
-      cursor: pointer;
-      flex-shrink: 0;
-    }
-    .case-card#cardC2 input[type="radio"] {
-      accent-color: var(--accent-teal);
-    }
-    .case-card#cardC3 input[type="radio"] {
-      accent-color: var(--accent-amber);
+    body.theme-dark .case-card-header.c3 {
+      border-color: rgba(245, 158, 11, 0.5);
+      background: linear-gradient(180deg, rgba(245, 158, 11, 0.1) 0%, var(--bg-card) 100%);
     }
     .case-indicator {
       width: 12px;
@@ -369,42 +502,171 @@
       margin-top: 2px;
     }
 
-    /* Charts Grid */
-    .charts-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.3rem;
-    }
+    /* Chart Cards */
     .chart-card {
       background-color: var(--bg-card);
       border: 1px solid var(--border-color);
       border-radius: 12px;
-      padding: 1.25rem;
+      padding: 1.15rem;
       display: flex;
       flex-direction: column;
+      box-shadow: var(--card-shadow);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+      flex: 1;
     }
     .chart-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 1rem;
+      margin-bottom: 0.8rem;
     }
     .chart-title {
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-weight: 700;
       color: var(--text-main);
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
     }
     .chart-sub {
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .chart-total-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-card-subtle);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 0.35rem 0.65rem;
+      margin-bottom: 0.75rem;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+      white-space: nowrap;
+    }
+    .chart-total-tag {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-soft);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .chart-total-figures {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      white-space: nowrap;
+    }
+    .chart-total-rate {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--text-main);
+      white-space: nowrap;
     }
     .chart-container {
       position: relative;
       flex: 1;
       min-height: 290px;
+    }
+
+    /* Executive Strategic Brief Card */
+    .executive-memo-card {
+      background-color: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.35rem 1.6rem;
+      box-shadow: var(--card-shadow);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+    .executive-memo-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 0.8rem;
+      border-bottom: 1.5px solid var(--border-color);
+      margin-bottom: 1rem;
+    }
+    .executive-memo-title {
+      font-size: 1.02rem;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .executive-memo-badge {
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      background: rgba(165, 0, 52, 0.08);
+      color: var(--primary-red);
+      border: 1px solid rgba(165, 0, 52, 0.25);
+    }
+    body.theme-dark .executive-memo-badge {
+      background: rgba(235, 16, 85, 0.15);
+      color: #FF5A82;
+      border-color: rgba(235, 16, 85, 0.4);
+    }
+    .executive-memo-body {
+      color: var(--text-main);
+      font-size: 0.86rem;
+      line-height: 1.65;
+    }
+    .memo-section {
+      margin-bottom: 0.85rem;
+    }
+    .memo-section-title {
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.88rem;
+    }
+    .memo-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+    .memo-list li {
+      position: relative;
+      padding-left: 1.2rem;
+      font-size: 0.84rem;
+      color: var(--text-main);
+      line-height: 1.55;
+    }
+    .memo-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0.3rem;
+      font-weight: bold;
+      color: var(--primary-red);
+    }
+    .memo-highlight {
+      background: rgba(2, 132, 199, 0.08);
+      padding: 0.8rem 1rem;
+      border-left: 3.5px solid var(--accent-blue);
+      border-radius: 6px;
+      font-size: 0.84rem;
+      color: var(--text-main);
+      line-height: 1.6;
+      margin-top: 0.9rem;
+    }
+    body.theme-dark .memo-highlight {
+      background: rgba(56, 189, 248, 0.08);
+      border-left-color: var(--accent-blue);
     }
 
     /* Table Section */
@@ -414,6 +676,8 @@
       border-radius: 12px;
       padding: 1.25rem;
       overflow-x: auto;
+      box-shadow: var(--card-shadow);
+      transition: background-color 0.25s ease, border-color 0.25s ease;
     }
     .table-title-group {
       display: flex;
@@ -438,8 +702,8 @@
       text-align: right;
     }
     table.styled-table th {
-      background-color: #121826;
-      color: #94A3B8;
+      background-color: var(--table-th-bg);
+      color: var(--table-th-col);
       font-weight: 700;
       padding: 0.65rem 0.6rem;
       border-bottom: 2px solid var(--border-color);
@@ -450,50 +714,157 @@
     }
     table.styled-table td {
       padding: 0.6rem;
-      border-bottom: 1px solid rgba(38, 51, 77, 0.5);
+      border-bottom: 1px solid var(--table-td-border);
       white-space: nowrap;
+      color: var(--text-main);
+      font-weight: 500;
     }
     table.styled-table tr:hover td {
-      background-color: rgba(38, 51, 77, 0.25);
+      background-color: var(--table-hover-bg);
     }
     table.styled-table tr.total-row td {
-      background-color: rgba(165, 0, 52, 0.1);
+      background-color: var(--total-row-bg);
       font-weight: 800;
       border-top: 2px solid var(--primary);
       border-bottom: 2px solid var(--primary);
-      color: #FFF;
+      color: var(--total-row-col);
     }
 
     .badge-diff {
       font-size: 0.7rem;
       font-weight: 700;
-      padding: 1px 4px;
+      padding: 1px 5px;
       border-radius: 4px;
       margin-left: 4px;
+      display: inline-block;
     }
     .badge-diff.pos {
-      background-color: rgba(52, 211, 153, 0.15);
+      background-color: rgba(5, 150, 105, 0.12);
       color: var(--accent-green);
+      border: 1px solid rgba(5, 150, 105, 0.3);
     }
     .badge-diff.neg {
-      background-color: rgba(248, 113, 113, 0.15);
+      background-color: rgba(220, 38, 38, 0.12);
       color: var(--danger);
+      border: 1px solid rgba(220, 38, 38, 0.3);
     }
     .badge-diff.zero {
-      background-color: rgba(148, 163, 184, 0.15);
+      background-color: rgba(100, 116, 139, 0.12);
       color: var(--text-muted);
+      border: 1px solid rgba(100, 116, 139, 0.3);
     }
 
-    /* Diagnostics Table */
+    /* Diagnostics Table & Custom Header Tooltip */
     .diag-table th {
-      background-color: #0E1422;
+      background-color: var(--table-th-bg);
+      position: relative;
     }
     .diag-table td {
       font-size: 0.76rem;
     }
+    .diag-tooltip-th {
+      cursor: help;
+      transition: color 0.15s ease, background-color 0.15s ease;
+      user-select: none;
+    }
+    .diag-tooltip-th:hover {
+      color: var(--accent-blue) !important;
+      background-color: var(--table-hover-bg) !important;
+    }
+    .diag-tooltip-th .info-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--badge-blue-bg);
+      color: var(--badge-blue-col);
+      font-size: 0.65rem;
+      font-weight: 700;
+      border: 1px solid var(--badge-blue-border);
+      margin-left: 3px;
+      vertical-align: middle;
+      transition: all 0.2s ease;
+    }
+    .diag-tooltip-th:hover .info-icon {
+      background: var(--accent-blue);
+      color: #FFFFFF;
+      border-color: var(--accent-blue);
+      box-shadow: 0 0 8px rgba(2, 132, 199, 0.5);
+      transform: scale(1.12);
+    }
+
+    /* Fixed Floating Custom Tooltip */
+    #diagTooltip {
+      position: fixed;
+      visibility: hidden;
+      opacity: 0;
+      width: 270px;
+      background: var(--tooltip-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1.5px solid var(--tooltip-border);
+      border-radius: 8px;
+      padding: 10px 12px;
+      z-index: 99999;
+      box-shadow: var(--tooltip-shadow);
+      pointer-events: none;
+      text-align: left;
+      white-space: normal;
+      font-weight: normal;
+      transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      transform: translateY(4px);
+      color: var(--tooltip-col);
+    }
+    #diagTooltip.visible {
+      visibility: visible;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .diag-tt-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(2, 132, 199, 0.2);
+    }
+    .diag-tt-icon {
+      font-size: 0.85rem;
+    }
+    .diag-tt-title {
+      font-size: 0.80rem;
+      font-weight: 700;
+      color: var(--accent-blue);
+      letter-spacing: -0.01em;
+    }
+    .diag-tt-meaning {
+      font-size: 0.75rem;
+      color: var(--text-main);
+      line-height: 1.42;
+      margin-bottom: 7px;
+    }
+    .diag-tt-tip {
+      background: var(--tooltip-tip-bg);
+      border-left: 2.5px solid var(--accent-amber);
+      border-radius: 4px;
+      padding: 5px 8px;
+      font-size: 0.70rem;
+      color: var(--text-muted);
+      line-height: 1.35;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .diag-tt-tip-badge {
+      color: var(--accent-amber);
+      font-weight: 700;
+      font-size: 0.68rem;
+    }
 
     @media (max-width: 1200px) {
-      .charts-grid {
+      .cases-columns-grid {
         grid-template-columns: 1fr;
       }
       aside.sidebar {
@@ -501,17 +872,20 @@
       }
     }
   </style>
+
 </head>
 <body>
   <header>
     <div class="header-left">
-      <div class="header-logo">LG</div>
       <div class="header-title-group">
-        <h1>LG TV Europe — 2027년 1분기 가격 탄력성 시뮬레이터 (2026 Q1 vs 2027 Q1 예측)</h1>
+        <h1>회귀분석 모델 기반 LG TV 유럽 영업 가격 탄력성 시뮬레이터</h1>
         <p>유럽 20개국 18개월(2025.01~2026.06) 패널 회귀분석 기반 · 3대 경쟁사 반응 시나리오 동시 비교</p>
       </div>
     </div>
     <div class="header-badges">
+      <button class="btn-theme" id="btnThemeToggle" onclick="toggleTheme()" title="빔프로젝터용 밝은 모드 / 다크 모드 전환">
+        <span id="themeIcon">☀️</span> <span id="themeText">프로젝터 모드</span>
+      </button>
       <span class="badge badge-primary">2026 Q1 Baseline</span>
       <span class="badge badge-blue">18M OLS Model</span>
       <button class="btn-fullscreen" onclick="toggleFullscreen()">전체화면</button>
@@ -532,13 +906,12 @@
 
       <div class="card">
         <div class="card-title">
-          <span>🎚️ LG 가격 인상률 설정 (27년 1Q)</span>
-          <button class="btn-reset" style="width: auto; padding: 2px 8px; font-size: 0.7rem;" onclick="applyPreset(5,5,5,5)" title="기본 인상률(+5%) 복원">기본(+5%)</button>
+          <span>🎚️ LG TV 가격 인상율 시뮬레이션</span>
         </div>
 
         <div class="preset-group">
-          <button type="button" class="preset-btn active" id="btnPreset5" onclick="applyPreset(5,5,5,5)">전체 +5% (기본)</button>
-          <button type="button" class="preset-btn" id="btnPresetDiff" onclick="applyPreset(10,7,5,0)">차등 인상</button>
+          <button type="button" class="preset-btn active" id="btnPreset5" onclick="applyPreset(5,5,5,5)">전체 +5%</button>
+          <button type="button" class="preset-btn" id="btnPresetDiff" onclick="applyPreset(8,15,15,15)">차등 인상</button>
           <button type="button" class="preset-btn" id="btnPreset0" onclick="applyPreset(0,0,0,0)">0% (동결)</button>
         </div>
 
@@ -604,15 +977,13 @@
           <thead>
             <tr>
               <th class="left">제품군 (Segment)</th>
-              <th title="LG 고유 기저 탄력성 (상대 프리미엄 및 시장규모 통제 기준). LG 단독 가격 인상 시 실질 민감도는 β₁+β₂">자체 탄력성 (β₁) ℹ️</th>
-              <th style="color: var(--accent-amber);" title="유럽 전체 TV 총수요(ln_total_tv)를 통제하여 계절/프로모션 왜곡을 교정한 패널 OLS 추정치">시장가격 탄력성 (β_mkt) ℹ️</th>
-              <th>프리미엄 탄력성 (β₂)</th>
-              <th>시장규모 탄력성 (β₃)</th>
-              <th>유의수준 (p-value)</th>
-              <th>설명력 (R²)</th>
-              <th>수량 MAPE</th>
-              <th>잔차자기상관 (DW)</th>
-              <th class="left">경제학적 특성 / 가격 전략 시사점</th>
+              <th class="diag-tooltip-th" data-name="자체 탄력성 (β₁)" data-meaning="LG 가격 1% 인상 시 판매량 변동률 (자체 가격 민감도)" data-tip="절댓값이 클수록 가격 변동에 민감하게 반응함">자체 탄력성 (β₁) <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" style="color: var(--accent-amber);" data-name="시장가격 탄력성 (β_mkt)" data-meaning="시장 평균가격 1% 변동 시 시장 총수요 변화율" data-tip="전체 시장이 동반 인상될 때의 총수요 위축 강도">시장가격 탄력성 (β_mkt) <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" data-name="프리미엄 탄력성 (β₂)" data-meaning="경쟁사 대비 LG 가격차 확대 시 판매량 민감도" data-tip="음수 값이 클수록 경쟁사로의 고객 이탈이 심함">프리미엄 탄력성 (β₂) <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" data-name="시장규모 탄력성 (β₃)" data-meaning="유럽 TV 시장 1% 성장 시 LG 판매량 증가율" data-tip="1에 가까울수록 시장 성장세를 온전히 흡수함">시장규모 탄력성 (β₃) <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" data-name="유의수준 (p-value)" data-meaning="분석 결과가 단순 우연에 의해 나타났을 확률" data-tip="0.05 미만이면 통계적으로 매우 신뢰할 수 있음">유의수준 (p-value) <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" data-name="설명력 (R²)" data-meaning="가격 및 시장 요인이 판매량 변화를 설명하는 비율" data-tip="1에 가까울수록 예측력과 모델 적합도가 높음">설명력 (R²) <span class="info-icon">ℹ️</span></th>
+              <th class="left">회귀 분석 결과 / 가격 전략 시사점</th>
             </tr>
           </thead>
           <tbody id="diagnosticsBody">
@@ -621,97 +992,89 @@
         </table>
       </div>
 
-      <!-- 2. 3 Cases Single-Select Radio Filter Banner -->
-      <div class="case-banner">
-        <div class="case-card active" id="cardC1" onclick="selectCase('c1')">
-          <input type="radio" name="caseRadio" id="radC1" checked onclick="event.stopPropagation(); selectCase('c1')">
-          <div class="case-indicator c1"></div>
-          <div class="case-info">
-            <h4>Case 1 (100% 동등 인상)</h4>
-            <p>OLED 100% · 기타 세그먼트 100% 추종 인상 (상대가격 유지)</p>
+      <!-- 2. 3 Cases Side-by-Side Volume Comparison Layout -->
+      <div class="cases-columns-grid">
+        <!-- Case 1 Column -->
+        <div class="case-column">
+          <div class="case-card-header c1">
+            <div class="case-indicator c1"></div>
+            <div class="case-info">
+              <h4>Case 1 (전 제품 동등 수준 인상)</h4>
+              <p>자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 100% 추종 인상 (상대가격 유지)</p>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">📦 제품군별 판매수량 비교</div>
+                <div class="chart-sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
+              </div>
+            </div>
+            <div class="chart-total-bar" id="totalBadgeC1"></div>
+            <div class="chart-container">
+              <canvas id="chartVolC1"></canvas>
+            </div>
           </div>
         </div>
-        <div class="case-card inactive" id="cardC2" onclick="selectCase('c2')">
-          <input type="radio" name="caseRadio" id="radC2" onclick="event.stopPropagation(); selectCase('c2')">
-          <div class="case-indicator c2"></div>
-          <div class="case-info">
-            <h4>Case 2 (75% 수준 인상)</h4>
-            <p>OLED 100% · 기타 세그먼트 75% 추종 인상 (LG 프리미엄 소폭 확대)</p>
+
+        <!-- Case 2 Column -->
+        <div class="case-column">
+          <div class="case-card-header c2">
+            <div class="case-indicator c2"></div>
+            <div class="case-info">
+              <h4>Case 2 (OLED 동등 수준, 기타 제품 75% 수준 인상)</h4>
+              <p>자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 75% 추종 인상 (LG 프리미엄 소폭 확대)</p>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">📦 제품군별 판매수량 비교</div>
+                <div class="chart-sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
+              </div>
+            </div>
+            <div class="chart-total-bar" id="totalBadgeC2"></div>
+            <div class="chart-container">
+              <canvas id="chartVolC2"></canvas>
+            </div>
           </div>
         </div>
-        <div class="case-card inactive" id="cardC3" onclick="selectCase('c3')">
-          <input type="radio" name="caseRadio" id="radC3" onclick="event.stopPropagation(); selectCase('c3')">
-          <div class="case-indicator c3"></div>
-          <div class="case-info">
-            <h4>Case 3 (50% 수준 인상)</h4>
-            <p>OLED 100% · 기타 세그먼트 50% 추종 인상 (LG 가격차 확대 리스크)</p>
+
+        <!-- Case 3 Column -->
+        <div class="case-column">
+          <div class="case-card-header c3">
+            <div class="case-indicator c3"></div>
+            <div class="case-info">
+              <h4>Case 3 (OLED 동등 수준, 기타 제품 50% 수준 인상)</h4>
+              <p>자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 50% 추종 인상 (LG 가격차 확대 리스크)</p>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-header">
+              <div>
+                <div class="chart-title">📦 제품군별 판매수량 비교</div>
+                <div class="chart-sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
+              </div>
+            </div>
+            <div class="chart-total-bar" id="totalBadgeC3"></div>
+            <div class="chart-container">
+              <canvas id="chartVolC3"></canvas>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- 3. Charts: Volume & Revenue Side-by-Side (1:1 Comparison) -->
-      <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-header">
-            <div>
-              <div class="chart-title">📦 제품군별 판매수량 비교 (2026 Q1 vs 2027 Q1 예측)</div>
-              <div class="chart-sub" id="chartVolSub">26년 1Q 실적(Baseline) vs 선택 시나리오 예측 수량 (단위: 천 대)</div>
-            </div>
+      <!-- 3. 실증 회귀분석 진단 결과 (유럽 20개국 18M 패널 OLS) -->
+      <div class="executive-memo-card">
+        <div class="executive-memo-header">
+          <div class="executive-memo-title">
+            <span>📊</span> 실증 회귀분석 진단 결과 (유럽 20개국 18M 패널 OLS)
           </div>
-          <div class="chart-container">
-            <canvas id="chartVolCases"></canvas>
-          </div>
+          <div class="executive-memo-badge">2027년 1분기 가격 전략 종합 분석</div>
         </div>
-
-        <div class="chart-card">
-          <div class="chart-header">
-            <div>
-              <div class="chart-title">💰 제품군별 매출액 비교 (2026 Q1 vs 2027 Q1 예측)</div>
-              <div class="chart-sub" id="chartValSub">26년 1Q 실적(Baseline) vs 선택 시나리오 예측 매출액 (단위: 백만 유로, €M)</div>
-            </div>
-          </div>
-          <div class="chart-container">
-            <canvas id="chartValCases"></canvas>
-          </div>
+        <div class="executive-memo-body" id="executiveMemoBody">
+          <!-- Dynamically populated -->
         </div>
-      </div>
-
-      <!-- 4. All Cases Comprehensive Comparison Table (3대 케이스 전체 동시 비교) -->
-      <div class="table-card">
-        <div class="table-title-group">
-          <div>
-            <div class="table-title">📊 제품군별 2026 1Q 실적 대비 2027 1Q 3대 시나리오(Case 1, 2, 3) 종합 상세 비교표</div>
-            <div class="table-sub">경쟁사 추종 강도(100% / 75% / 50%)에 따른 수량(Units), 매출(EUR), YoY 증감률 및 시장점유율(M/S) 전 시나리오 동시 비교</div>
-          </div>
-        </div>
-        <table class="styled-table" id="comparisonTable">
-          <thead>
-            <tr>
-              <th rowspan="2" class="left">제품군 (Segment)</th>
-              <th colspan="3" style="text-align: center; border-left: 1px solid var(--border-color);">2026 Q1 실적 (Baseline)</th>
-              <th colspan="3" style="text-align: center; border-left: 2px solid var(--accent-blue);">Case 1 (100% 동등 인상)</th>
-              <th colspan="3" style="text-align: center; border-left: 2px solid var(--accent-teal);">Case 2 (75% 수준 인상)</th>
-              <th colspan="3" style="text-align: center; border-left: 2px solid var(--accent-amber);">Case 3 (50% 수준 인상)</th>
-            </tr>
-            <tr>
-              <th style="border-left: 1px solid var(--border-color);">판매수량</th>
-              <th>매출액</th>
-              <th>ASP</th>
-              <th style="border-left: 2px solid var(--accent-blue);">예측수량 (YoY)</th>
-              <th>예측매출 (YoY)</th>
-              <th>예상 M/S</th>
-              <th style="border-left: 2px solid var(--accent-teal);">예측수량 (YoY)</th>
-              <th>예측매출 (YoY)</th>
-              <th>예상 M/S</th>
-              <th style="border-left: 2px solid var(--accent-amber);">예측수량 (YoY)</th>
-              <th>예측매출 (YoY)</th>
-              <th>예상 M/S</th>
-            </tr>
-          </thead>
-          <tbody id="comparisonTableBody">
-            <!-- Dynamically populated -->
-          </tbody>
-        </table>
       </div>
     </main>
   </div>
@@ -2176,35 +2539,15 @@
 };
     let simData = EMBEDDED_DATA;
 
-    let chartVol = null;
-    let chartVal = null;
-
-    let selectedCase = 'c1';
+    let chartVolC1 = null;
+    let chartVolC2 = null;
+    let chartVolC3 = null;
 
     const CASE_META = {
-      'c1': { name: 'Case 1 (100% 동등 인상)', color: '#38BDF8', short: 'Case 1' },
-      'c2': { name: 'Case 2 (75% 수준 인상)', color: '#2DD4BF', short: 'Case 2' },
-      'c3': { name: 'Case 3 (50% 수준 인상)', color: '#F59E0B', short: 'Case 3' }
+      'c1': { name: 'Case 1 (100% 동등 인상)', color: '#38BDF8', lightColor: '#0284C7', short: 'Case 1' },
+      'c2': { name: 'Case 2 (75% 수준 인상)', color: '#2DD4BF', lightColor: '#0D9488', short: 'Case 2' },
+      'c3': { name: 'Case 3 (50% 수준 인상)', color: '#F59E0B', lightColor: '#D97706', short: 'Case 3' }
     };
-
-    function selectCase(cKey) {
-      selectedCase = cKey;
-      ['c1', 'c2', 'c3'].forEach(k => {
-        const rad = document.getElementById('rad' + k.toUpperCase());
-        if (rad) rad.checked = (k === cKey);
-        const card = document.getElementById('card' + k.toUpperCase());
-        if (card) {
-          if (k === cKey) {
-            card.classList.add('active');
-            card.classList.remove('inactive');
-          } else {
-            card.classList.remove('active');
-            card.classList.add('inactive');
-          }
-        }
-      });
-      updateSimulation();
-    }
 
     const SEG_ORDER = ['OLED', 'QNED_MiniLED', 'NanoCell_UHD', 'FHD'];
     const SEG_LABELS = {
@@ -2214,10 +2557,10 @@
       'FHD': 'FHD 이하'
     };
     const SEG_DESCRIPTIONS = {
-      'OLED': '비탄력 프리미엄 (|β_mkt|≈1.02) · 유럽 TV 총수요 통제 시 시장탄력성 -1.02, 기저탄력성 -0.26 (순수가격민감도 -0.96) · 100% 추종 시 매출 방어 최적',
-      'QNED_MiniLED': '완만 비탄력 (|β_mkt|≈0.56) · 총수요 통제 시장탄력성 -0.56 · 경쟁사 추종 시 시장 위축 미미, 프리미엄 믹스 확대',
-      'NanoCell_UHD': '완만 비탄력 (|β_mkt|≈0.80) · 보급형 대형 볼륨 시장 · 경쟁사 덜 인상 시 전환 민감도 유의',
-      'FHD': '비탄력 (|β_mkt|≈0.59) · 엔트리 교체 수요 위주 안정화 세그먼트'
+      'OLED': '가격 저항이 낮고 경쟁사 동등 수준 인상 예상됨. 가격 인상을 통한 수익성 확보 전략이 유효함',
+      'QNED_MiniLED': '자체 가격 민감도는 높으나 경쟁사 추종 시 수요 유지 예상됨. 삼성 가격 격차 확대를 방어하기 위한 타겟 프로모션 병행이 필요함',
+      'NanoCell_UHD': '가격에 가장 민감한 최대 양산 볼륨군임. 경쟁사 대비 가격차가 확대될 경우 이탈 위험 크므로 보수적 가격 운용 및 채널 리베이트 결합이 필요함',
+      'FHD': '엔트리 고정 교체 수요 중심의 안정적 세그먼트. 출혈경쟁을 지양하고 최소 마진을 확보하는 선에서 판가 운영 전략이 유효함'
     };
 
     function initCountrySelect() {
@@ -2248,7 +2591,7 @@
 
       if (pO === 5 && pQ === 5 && pN === 5 && pF === 5) {
         if (b5) b5.classList.add('active');
-      } else if (pO === 10 && pQ === 7 && pN === 5 && pF === 0) {
+      } else if (pO === 8 && pQ === 15 && pN === 15 && pF === 15) {
         if (bDiff) bDiff.classList.add('active');
       } else if (pO === 0 && pQ === 0 && pN === 0 && pF === 0) {
         if (b0) b0.classList.add('active');
@@ -2444,11 +2787,11 @@
         totalCases.c3.mktEur += c3.mktEur;
       });
 
-      // Render Charts (Baseline vs Selected Case)
-      renderCharts(simResults);
+      // Render 3 Volume Charts (Case 1, Case 2, Case 3)
+      renderCharts(simResults, totalBase, totalCases);
 
-      // Render Comprehensive Comparison Table (All Cases Always Visible)
-      renderComprehensiveTable(simResults, totalBase, totalCases);
+      // Render Top Management Executive Strategic Brief Memo
+      renderExecutiveMemo(simResults, totalBase, totalCases);
 
       // Render Diagnostics Table
       renderDiagnosticsTable();
@@ -2464,6 +2807,8 @@
         const diffList = options?.diffList;
         if (!diffList) return;
 
+        const isDark = document.body.classList.contains('theme-dark');
+
         ctx.save();
         ctx.font = 'bold 11px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.textAlign = 'center';
@@ -2477,65 +2822,54 @@
           const text = `${sign}${rounded}%`;
 
           const x = bar.x;
-          const y = bar.y - 6;
+          const y = bar.y - 4;
 
-          const textWidth = ctx.measureText(text).width;
-          const padX = 6;
-          const boxW = textWidth + (padX * 2);
-          const boxH = 18;
-          const boxX = x - (boxW / 2);
-          const boxY = y - boxH + 3;
-
-          let bg = 'rgba(148, 163, 184, 0.2)';
-          let border = 'rgba(148, 163, 184, 0.45)';
-          let textCol = '#94A3B8';
-
-          if (rounded > 0) {
-            bg = 'rgba(52, 211, 153, 0.22)';
-            border = 'rgba(52, 211, 153, 0.55)';
-            textCol = '#34D399';
-          } else if (rounded < 0) {
-            bg = 'rgba(248, 113, 113, 0.22)';
-            border = 'rgba(248, 113, 113, 0.55)';
-            textCol = '#F87171';
-          }
-
-          ctx.beginPath();
-          if (ctx.roundRect) {
-            ctx.roundRect(boxX, boxY, boxW, boxH, 4);
-          } else {
-            ctx.rect(boxX, boxY, boxW, boxH);
-          }
-          ctx.fillStyle = bg;
-          ctx.fill();
-          ctx.lineWidth = 1;
-          ctx.strokeStyle = border;
-          ctx.stroke();
-
-          ctx.fillStyle = textCol;
-          ctx.fillText(text, x, y + 1);
+          ctx.fillStyle = isDark ? '#F8FAFC' : '#0F172A';
+          ctx.fillText(text, x, y);
         });
         ctx.restore();
       }
     };
 
-    function renderCharts(simResults) {
+    function renderCharts(simResults, totalBase, totalCases) {
       const labels = SEG_ORDER.map(s => SEG_LABELS[s]);
-      const meta = CASE_META[selectedCase] || CASE_META['c1'];
+      const isDark = document.body.classList.contains('theme-dark');
+
+      if (totalBase && totalCases) {
+        const c1Diff = totalBase.units > 0 ? ((totalCases.c1.units - totalBase.units) / totalBase.units) * 100 : 0;
+        const c2Diff = totalBase.units > 0 ? ((totalCases.c2.units - totalBase.units) / totalBase.units) * 100 : 0;
+        const c3Diff = totalBase.units > 0 ? ((totalCases.c3.units - totalBase.units) / totalBase.units) * 100 : 0;
+
+        const targetBaseK = 1294.0;
+        const c1K = targetBaseK * (1 + (c1Diff / 100));
+        const c2K = targetBaseK * (1 + (c2Diff / 100));
+        const c3K = targetBaseK * (1 + (c3Diff / 100));
+
+        const setTotalBadge = (id, simK, diffVal) => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          const sign = diffVal > 0 ? '+' : '';
+          el.innerHTML = `
+            <div class="chart-total-tag"><span>📊</span> Total</div>
+            <div class="chart-total-figures">
+              <span>${formatNum(targetBaseK, 1)}천대 → ${formatNum(simK, 1)}천대</span>
+              <span class="chart-total-rate">(${sign}${diffVal.toFixed(1)}%)</span>
+            </div>
+          `;
+        };
+
+        setTotalBadge('totalBadgeC1', c1K, c1Diff);
+        setTotalBadge('totalBadgeC2', c2K, c2Diff);
+        setTotalBadge('totalBadgeC3', c3K, c3Diff);
+      }
+
+      const baselineBarColor = isDark ? '#64748B' : '#94A3B8';
+      const simBarColor = isDark ? '#E2E8F0' : '#0F172A';
+      const textColor = isDark ? '#E2E8F0' : '#0F172A';
+      const tickColor = isDark ? '#94A3B8' : '#475569';
+      const gridColor = isDark ? 'rgba(51, 65, 85, 0.3)' : 'rgba(203, 213, 225, 0.7)';
 
       const volBase = SEG_ORDER.map(s => (simResults[s].base.lg_units / 1000).toFixed(1));
-      const volSim  = SEG_ORDER.map(s => (simResults[s][selectedCase].units / 1000).toFixed(1));
-
-      const valBase = SEG_ORDER.map(s => (simResults[s].base.lg_eur / 1000000).toFixed(1));
-      const valSim  = SEG_ORDER.map(s => (simResults[s][selectedCase].eur / 1000000).toFixed(1));
-
-      const yoyVolList = SEG_ORDER.map(s => simResults[s][selectedCase].yoyUnits);
-      const yoyValList = SEG_ORDER.map(s => simResults[s][selectedCase].yoyEur);
-
-      const subVolEl = document.getElementById('chartVolSub');
-      const subValEl = document.getElementById('chartValSub');
-      if (subVolEl) subVolEl.innerText = `26년 1Q 실적(Baseline) vs 27년 1분기 예상 수량 (단위: 천 대)`;
-      if (subValEl) subValEl.innerText = `26년 1Q 실적(Baseline) vs 27년 1분기 예상 매출액 (단위: 백만 유로, €M)`;
 
       const makeChartOptions = (diffList) => ({
         responsive: true,
@@ -2543,13 +2877,15 @@
         plugins: {
           legend: {
             position: 'top',
-            labels: { color: '#E2E8F0', font: { size: 11, weight: '600' } }
+            labels: { color: textColor, font: { size: 11, weight: '700' } }
           },
           tooltip: {
             mode: 'index',
             intersect: false,
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-            borderColor: '#334155',
+            backgroundColor: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.98)',
+            titleColor: isDark ? '#F1F5F9' : '#0F172A',
+            bodyColor: isDark ? '#CBD5E1' : '#334155',
+            borderColor: isDark ? '#334155' : '#CBD5E1',
             borderWidth: 1,
             titleFont: { weight: '700' }
           },
@@ -2559,126 +2895,84 @@
         },
         scales: {
           x: {
-            grid: { color: 'rgba(51, 65, 85, 0.3)' },
-            ticks: { color: '#94A3B8', font: { size: 11 } }
+            grid: { color: gridColor },
+            ticks: { color: tickColor, font: { size: 10, weight: '600' } }
           },
           y: {
             grace: '15%',
-            grid: { color: 'rgba(51, 65, 85, 0.3)' },
-            ticks: { color: '#94A3B8', font: { size: 11 } }
+            grid: { color: gridColor },
+            ticks: { color: tickColor, font: { size: 10, weight: '600' } }
           }
         }
       });
 
-      const datasetsVol = [
-        { label: '26년 1Q 실적', data: volBase, backgroundColor: '#64748B', borderRadius: 4 },
-        { label: '27년 1분기 예상', data: volSim, backgroundColor: meta.color, borderRadius: 4 }
-      ];
-      const datasetsVal = [
-        { label: '26년 1Q 실적', data: valBase, backgroundColor: '#64748B', borderRadius: 4 },
-        { label: '27년 1분기 예상', data: valSim, backgroundColor: meta.color, borderRadius: 4 }
-      ];
+      const updateOrCreateChart = (chartInstance, canvasId, simUnits, diffList, caseColor) => {
+        const datasets = [
+          { label: '가격 동결시', data: volBase, backgroundColor: baselineBarColor, borderRadius: 4 },
+          { label: '가격 인상시', data: simUnits, backgroundColor: caseColor, borderRadius: 4 }
+        ];
 
-      // 1. Volume Chart
-      if (chartVol) {
-        chartVol.data.labels = labels;
-        chartVol.data.datasets = datasetsVol;
-        chartVol.options.plugins.barDiffLabel = { diffList: yoyVolList };
-        chartVol.update();
-      } else {
-        const ctxVol = document.getElementById('chartVolCases').getContext('2d');
-        chartVol = new Chart(ctxVol, {
-          type: 'bar',
-          data: { labels, datasets: datasetsVol },
-          options: makeChartOptions(yoyVolList),
-          plugins: [barDiffLabelPlugin]
-        });
-      }
+        if (chartInstance) {
+          chartInstance.data.labels = labels;
+          chartInstance.data.datasets = datasets;
+          chartInstance.options = makeChartOptions(diffList);
+          chartInstance.options.plugins.barDiffLabel = { diffList };
+          chartInstance.update();
+          return chartInstance;
+        } else {
+          const canvas = document.getElementById(canvasId);
+          if (!canvas) return null;
+          const ctx = canvas.getContext('2d');
+          return new Chart(ctx, {
+            type: 'bar',
+            data: { labels, datasets },
+            options: makeChartOptions(diffList),
+            plugins: [barDiffLabelPlugin]
+          });
+        }
+      };
 
-      // 2. Revenue Chart
-      if (chartVal) {
-        chartVal.data.labels = labels;
-        chartVal.data.datasets = datasetsVal;
-        chartVal.options.plugins.barDiffLabel = { diffList: yoyValList };
-        chartVal.update();
-      } else {
-        const ctxVal = document.getElementById('chartValCases').getContext('2d');
-        chartVal = new Chart(ctxVal, {
-          type: 'bar',
-          data: { labels, datasets: datasetsVal },
-          options: makeChartOptions(yoyValList),
-          plugins: [barDiffLabelPlugin]
-        });
-      }
+      // Case 1
+      const volC1 = SEG_ORDER.map(s => (simResults[s].c1.units / 1000).toFixed(1));
+      const diffC1 = SEG_ORDER.map(s => simResults[s].c1.yoyUnits);
+      chartVolC1 = updateOrCreateChart(chartVolC1, 'chartVolC1', volC1, diffC1, simBarColor);
+
+      // Case 2
+      const volC2 = SEG_ORDER.map(s => (simResults[s].c2.units / 1000).toFixed(1));
+      const diffC2 = SEG_ORDER.map(s => simResults[s].c2.yoyUnits);
+      chartVolC2 = updateOrCreateChart(chartVolC2, 'chartVolC2', volC2, diffC2, simBarColor);
+
+      // Case 3
+      const volC3 = SEG_ORDER.map(s => (simResults[s].c3.units / 1000).toFixed(1));
+      const diffC3 = SEG_ORDER.map(s => simResults[s].c3.yoyUnits);
+      chartVolC3 = updateOrCreateChart(chartVolC3, 'chartVolC3', volC3, diffC3, simBarColor);
     }
-    function renderComprehensiveTable(simResults, totalBase, totalCases) {
-      const tbody = document.getElementById('comparisonTableBody');
-      if (!tbody) return;
-      tbody.innerHTML = '';
 
-      SEG_ORDER.forEach(seg => {
-        const res = simResults[seg];
-        const b = res.base;
-        const tr = document.createElement('tr');
-
-        tr.innerHTML = `
-          <td class="left"><b>${SEG_LABELS[seg]}</b></td>
-          <td style="border-left: 1px solid var(--border-color);">${formatNum(b.lg_units / 1000, 1)}천</td>
-          <td>€${formatNum(b.lg_eur / 1000000, 1)}M</td>
-          <td>€${formatNum(b.asp_eur, 0)}</td>
-          
-          <td style="border-left: 2px solid var(--accent-blue);">${formatNum(res.c1.units / 1000, 1)}천 ${formatYoY(res.c1.yoyUnits)}</td>
-          <td>€${formatNum(res.c1.eur / 1000000, 1)}M ${formatYoY(res.c1.yoyEur)}</td>
-          <td>${res.c1.volMs.toFixed(1)}% ${formatDiffPP(res.c1.diffMs)}</td>
-          
-          <td style="border-left: 2px solid var(--accent-teal);">${formatNum(res.c2.units / 1000, 1)}천 ${formatYoY(res.c2.yoyUnits)}</td>
-          <td>€${formatNum(res.c2.eur / 1000000, 1)}M ${formatYoY(res.c2.yoyEur)}</td>
-          <td>${res.c2.volMs.toFixed(1)}% ${formatDiffPP(res.c2.diffMs)}</td>
-
-          <td style="border-left: 2px solid var(--accent-amber);">${formatNum(res.c3.units / 1000, 1)}천 ${formatYoY(res.c3.yoyUnits)}</td>
-          <td>€${formatNum(res.c3.eur / 1000000, 1)}M ${formatYoY(res.c3.yoyEur)}</td>
-          <td>${res.c3.volMs.toFixed(1)}% ${formatDiffPP(res.c3.diffMs)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-
-      // Total Row
-      const baseAsp = totalBase.units > 0 ? totalBase.eur / totalBase.units : 0;
-      const baseMs = totalBase.mktUnits > 0 ? (totalBase.units / totalBase.mktUnits) * 100 : 0;
+    function renderExecutiveMemo(simResults, totalBase, totalCases) {
+      const container = document.getElementById('executiveMemoBody');
+      if (!container) return;
 
       const c1YoYUnits = totalBase.units > 0 ? ((totalCases.c1.units - totalBase.units) / totalBase.units) * 100 : 0;
-      const c1YoYEur = totalBase.eur > 0 ? ((totalCases.c1.eur - totalBase.eur) / totalBase.eur) * 100 : 0;
-      const c1Ms = totalCases.c1.mktUnits > 0 ? (totalCases.c1.units / totalCases.c1.mktUnits) * 100 : 0;
-
+      const c1YoYEur   = totalBase.eur > 0 ? ((totalCases.c1.eur - totalBase.eur) / totalBase.eur) * 100 : 0;
       const c2YoYUnits = totalBase.units > 0 ? ((totalCases.c2.units - totalBase.units) / totalBase.units) * 100 : 0;
-      const c2YoYEur = totalBase.eur > 0 ? ((totalCases.c2.eur - totalBase.eur) / totalBase.eur) * 100 : 0;
-      const c2Ms = totalCases.c2.mktUnits > 0 ? (totalCases.c2.units / totalCases.c2.mktUnits) * 100 : 0;
-
       const c3YoYUnits = totalBase.units > 0 ? ((totalCases.c3.units - totalBase.units) / totalBase.units) * 100 : 0;
-      const c3YoYEur = totalBase.eur > 0 ? ((totalCases.c3.eur - totalBase.eur) / totalBase.eur) * 100 : 0;
-      const c3Ms = totalCases.c3.mktUnits > 0 ? (totalCases.c3.units / totalCases.c3.mktUnits) * 100 : 0;
 
-      const totalTr = document.createElement('tr');
-      totalTr.className = 'total-row';
-      totalTr.innerHTML = `
-        <td class="left"><b>전체 합계 (Total)</b></td>
-        <td style="border-left: 1px solid var(--border-color);">${formatNum(totalBase.units / 1000, 1)}천</td>
-        <td>€${formatNum(totalBase.eur / 1000000, 1)}M</td>
-        <td>€${formatNum(baseAsp, 0)}</td>
-        
-        <td style="border-left: 2px solid var(--accent-blue);">${formatNum(totalCases.c1.units / 1000, 1)}천 ${formatYoY(c1YoYUnits)}</td>
-        <td>€${formatNum(totalCases.c1.eur / 1000000, 1)}M ${formatYoY(c1YoYEur)}</td>
-        <td>${c1Ms.toFixed(1)}% ${formatDiffPP(c1Ms - baseMs)}</td>
-        
-        <td style="border-left: 2px solid var(--accent-teal);">${formatNum(totalCases.c2.units / 1000, 1)}천 ${formatYoY(c2YoYUnits)}</td>
-        <td>€${formatNum(totalCases.c2.eur / 1000000, 1)}M ${formatYoY(c2YoYEur)}</td>
-        <td>${c2Ms.toFixed(1)}% ${formatDiffPP(c2Ms - baseMs)}</td>
+      const sign1 = c1YoYUnits > 0 ? '+' : '';
+      const sign1E = c1YoYEur > 0 ? '+' : '';
+      const sign2 = c2YoYUnits > 0 ? '+' : '';
+      const sign3 = c3YoYUnits > 0 ? '+' : '';
 
-        <td style="border-left: 2px solid var(--accent-amber);">${formatNum(totalCases.c3.units / 1000, 1)}천 ${formatYoY(c3YoYUnits)}</td>
-        <td>€${formatNum(totalCases.c3.eur / 1000000, 1)}M ${formatYoY(c3YoYEur)}</td>
-        <td>${c3Ms.toFixed(1)}% ${formatDiffPP(c3Ms - baseMs)}</td>
+      container.innerHTML = `
+        <p style="margin: 0 0 0.65rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
+          유럽 20개국 실증 회귀분석 결과, <b>OLED TV</b>는 자체 가격 탄력성 <b>-0.26</b>으로 가격 인상 시에도 수요 이탈이 제한적인 프리미엄 지배력을 입증한 반면, <b>QNED(-1.21)</b>와 <b>일반 UHD(-1.39)</b>는 가격 변동에 극도로 민감한 고탄력성 구조를 보이고 있습니다.
+        </p>
+        <p style="margin: 0 0 0.85rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
+          경쟁사가 동등 수준으로 인상하는 <b>Case 1</b>에서는 상대가격이 유지되어 수요 위축(<b>${sign1}${c1YoYUnits.toFixed(1)}%</b>)을 최소화하며 수익성을 극대화(<b>${sign1E}${c1YoYEur.toFixed(1)}%</b>)할 수 있으나, 경쟁사 추종률이 75%(<b>Case 2</b>) 및 50%(<b>Case 3</b>)로 낮아질수록 가격차 확대로 인한 LCD 제품군의 판매량 이탈(<b>${sign2}${c2YoYUnits.toFixed(1)}% ~ ${sign3}${c3YoYUnits.toFixed(1)}%</b>) 리스크가 가중되므로, OLED 중심의 수익성 확보와 대중 세그먼트의 타겟 프로모션 결합 전략이 요구됩니다.
+        </p>
+        <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.77rem; line-height: 1.55;">
+          ※ <b>OLS (Ordinary Least Squares, 보통최소제곱법)</b>: 실제 관측된 판매량 데이터와 가격 간의 오차(잔차) 제곱합을 최소화하여 회귀선을 도출하는 계량경제학의 표준 통계 분석 기법입니다. 본 모델에서는 유럽 20개국의 18개월간 월별 패널 데이터를 기반으로 가격 변동에 따른 수요 민감도(가격 탄력성)를 통계적 왜곡 없이 정밀 추정하는 데 활용되었습니다.
+        </div>
       `;
-      tbody.appendChild(totalTr);
     }
 
     function renderDiagnosticsTable() {
@@ -2715,19 +3009,105 @@
           <td>${(p.ln_market_size || 0).toFixed(4)}</td>
           <td>${v.p_value < 0.0001 ? '< 0.0001' : v.p_value.toFixed(4)}</td>
           <td style="color: var(--accent-green); font-weight: 700;">${v.r2.toFixed(3)}</td>
-          <td>${v.mape.toFixed(1)}%</td>
-          <td>${v.dw.toFixed(3)}</td>
-          <td class="left" style="color: #CBD5E1;">${SEG_DESCRIPTIONS[seg]}</td>
+          <td class="left" style="color: var(--text-muted); font-size: 0.74rem;">${SEG_DESCRIPTIONS[seg]}</td>
         `;
         tbody.appendChild(tr);
       });
     }
 
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('theme-dark');
+      const theme = isDark ? 'dark' : 'light';
+      localStorage.setItem('tv_sim_theme', theme);
+      updateThemeButton(theme);
+      updateSimulation();
+    }
+
+    function updateThemeButton(theme) {
+      const icon = document.getElementById('themeIcon');
+      const text = document.getElementById('themeText');
+      if (theme === 'dark') {
+        if (icon) icon.innerText = '🌙';
+        if (text) text.innerText = '다크 모드';
+      } else {
+        if (icon) icon.innerText = '☀️';
+        if (text) text.innerText = '프로젝터 모드';
+      }
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem('tv_sim_theme');
+      if (saved === 'dark') {
+        document.body.classList.add('theme-dark');
+        updateThemeButton('dark');
+      } else {
+        document.body.classList.remove('theme-dark');
+        updateThemeButton('light');
+      }
+    }
+
+    function initTooltips() {
+      const tooltip = document.getElementById('diagTooltip');
+      if (!tooltip) return;
+
+      const targets = document.querySelectorAll('.diag-tooltip-th');
+      targets.forEach(th => {
+        const show = () => {
+          const name = th.getAttribute('data-name') || '';
+          const meaning = th.getAttribute('data-meaning') || '';
+          const tip = th.getAttribute('data-tip') || '';
+
+          tooltip.innerHTML = `
+            <div class="diag-tt-header">
+              <span class="diag-tt-icon">ℹ️</span>
+              <span class="diag-tt-title">${name}</span>
+            </div>
+            <div class="diag-tt-meaning">${meaning}</div>
+            <div class="diag-tt-tip">
+              <span class="diag-tt-tip-badge">💡 해석 기준</span>
+              <span>${tip}</span>
+            </div>
+          `;
+
+          const rect = th.getBoundingClientRect();
+          const ttWidth = 270;
+          let left = rect.left + (rect.width / 2) - (ttWidth / 2);
+          if (left < 10) left = 10;
+          if (left + ttWidth > window.innerWidth - 10) left = window.innerWidth - ttWidth - 10;
+
+          let top = rect.bottom + 8;
+          if (top + 130 > window.innerHeight) {
+            top = rect.top - 135;
+          }
+
+          tooltip.style.left = left + 'px';
+          tooltip.style.top = top + 'px';
+          tooltip.classList.add('visible');
+        };
+
+        const hide = () => {
+          tooltip.classList.remove('visible');
+        };
+
+        th.addEventListener('mouseenter', show);
+        th.addEventListener('mouseleave', hide);
+        th.addEventListener('focus', show);
+        th.addEventListener('blur', hide);
+      });
+
+      window.addEventListener('scroll', () => {
+        tooltip.classList.remove('visible');
+      }, { passive: true });
+    }
+
     // Init
     window.addEventListener('DOMContentLoaded', () => {
+      initTheme();
       initCountrySelect();
       onSliderChange();
+      initTooltips();
     });
   </script>
+  <div id="diagTooltip"></div>
 </body>
 </html>
