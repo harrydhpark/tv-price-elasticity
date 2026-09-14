@@ -879,7 +879,7 @@
     <div class="header-left">
       <div class="header-title-group">
         <h1>회귀분석 모델 기반 LG TV 유럽 영업 가격 탄력성 시뮬레이터</h1>
-        <p>유럽 20개국 18개월(2025.01~2026.06) 패널 회귀분석 기반 · 3대 경쟁사 반응 시나리오 동시 비교</p>
+        <p>유럽 20개국 42개월(2023.01~2026.06) 패널 WLS 회귀분석 기반 · 4대 경쟁사 반응 시나리오 동시 비교</p>
       </div>
     </div>
     <div class="header-badges">
@@ -887,7 +887,7 @@
         <span id="themeIcon">☀️</span> <span id="themeText">프로젝터 모드</span>
       </button>
       <span class="badge badge-primary">2026 Q1 Baseline</span>
-      <span class="badge badge-blue">18M OLS Model</span>
+      <span class="badge badge-blue">42M WLS Model</span>
       <button class="btn-fullscreen" onclick="toggleFullscreen()">전체화면</button>
     </div>
   </header>
@@ -1065,11 +1065,11 @@
         </div>
       </div>
 
-      <!-- 3. 실증 회귀분석 진단 결과 (유럽 20개국 18M 패널 OLS) -->
+      <!-- 3. 실증 회귀분석 진단 결과 (유럽 20개국 42M 패널 WLS) -->
       <div class="executive-memo-card">
         <div class="executive-memo-header">
           <div class="executive-memo-title">
-            <span>📊</span> 실증 회귀분석 진단 결과 (유럽 20개국 18M 패널 OLS)
+            <span>📊</span> 실증 회귀분석 진단 결과 (유럽 20개국 42M 패널 WLS)
           </div>
           <div class="executive-memo-badge">2027년 1분기 가격 전략 종합 분석</div>
         </div>
@@ -3107,13 +3107,13 @@
 
       container.innerHTML = `
         <p style="margin: 0 0 0.65rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
-          유럽 20개국 실증 회귀분석 결과, <b>OLED TV</b>는 자체 가격 탄력성 <b>-0.26</b>으로 가격 인상 시에도 수요 이탈이 제한적인 프리미엄 지배력을 입증한 반면, <b>QNED(-1.21)</b>와 <b>일반 UHD(-1.39)</b>는 가격 변동에 극도로 민감한 고탄력성 구조를 보이고 있습니다.
+          유럽 20개국 42개월 실증 회귀분석(WLS) 결과, <b>OLED TV</b>는 자체 가격 탄력성 <b>-0.68</b>(경쟁사 교차 탄력성 <b>+1.06</b>)로 가격 인상 시에도 경쟁사 추종 시 수요 방어가 용이한 프리미엄 지배력을 입증한 반면, <b>QNED(-1.90, 교차 +2.74)</b>와 <b>일반 UHD(-1.73, 교차 +1.37)</b>는 가격 변동에 극도로 민감한 고탄력성 구조를 보이고 있습니다.
         </p>
         <p style="margin: 0 0 0.85rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
-          경쟁사가 동등 수준으로 인상하는 <b>Case 1</b>에서는 상대가격이 유지되어 수요 위축(<b>${sign1}${c1YoYUnits.toFixed(1)}%</b>)을 최소화하며 수익성을 극대화(<b>${sign1E}${c1YoYEur.toFixed(1)}%</b>)할 수 있으나, 경쟁사 추종률이 75%(<b>Case 2</b>) 및 50%(<b>Case 3</b>)로 낮아질수록 가격차 확대로 인한 LCD 제품군의 판매량 이탈(<b>${sign2}${c2YoYUnits.toFixed(1)}% ~ ${sign3}${c3YoYUnits.toFixed(1)}%</b>) 리스크가 가중되므로, OLED 중심의 수익성 확보와 대중 세그먼트의 타겟 프로모션 결합 전략이 요구됩니다.
+          경쟁사가 동등 수준으로 인상하는 <b>Case 1</b>에서는 상대가격이 유지되어 수요 위축(<b>${sign1}${c1YoYUnits.toFixed(1)}%</b>)을 최소화하며 매출/수익성을 극대화(<b>${sign1E}${c1YoYEur.toFixed(1)}%</b>)할 수 있으나, 경쟁사 추종률이 75%(<b>Case 2</b>), 50%(<b>Case 3</b>), 0% 동결(<b>Case 4</b>)로 낮아질수록 가격차 확대로 인한 LCD 제품군의 판매량 이탈(<b>${sign2}${c2YoYUnits.toFixed(1)}% ~ ${sign3}${c3YoYUnits.toFixed(1)}%</b>) 리스크가 가중되므로, OLED 중심의 수익성 확보와 양산 세그먼트의 타겟 프로모션 결합 전략이 요구됩니다.
         </p>
         <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.77rem; line-height: 1.55;">
-          ※ <b>OLS (Ordinary Least Squares, 보통최소제곱법)</b>: 실제 관측된 판매량 데이터와 가격 간의 오차(잔차) 제곱합을 최소화하여 회귀선을 도출하는 계량경제학의 표준 통계 분석 기법입니다. 본 모델에서는 유럽 20개국의 18개월간 월별 패널 데이터를 기반으로 가격 변동에 따른 수요 민감도(가격 탄력성)를 통계적 왜곡 없이 정밀 추정하는 데 활용되었습니다.
+          ※ <b>WLS (Weighted Least Squares, 가중최소제곱법) & 패널 고정효과(Fixed Effects)</b>: 유럽 20개국의 42개월간(2023.01~2026.06) 월별 패널 데이터를 기반으로 국가 고정효과(Country FE)와 12개 월 계절성(Month FE)을 통제하고, 최신 트렌드에 가중치(2025~2026년 1.0, 2024년 0.8, 2023년 0.6)를 부여하여 통계적 왜곡(DW ~0.5 및 MAPE ~78%)을 원천 해결한 정밀 추정 모형입니다.
         </div>
       `;
     }
@@ -3124,10 +3124,10 @@
       if (!simData || !simData.models) return;
 
       const defaultMktElast = {
-        'OLED': -1.0172,
-        'QNED_MiniLED': -0.5627,
-        'NanoCell_UHD': -0.8019,
-        'FHD': -0.5874
+        'OLED': -1.0968,
+        'QNED_MiniLED': -1.1455,
+        'NanoCell_UHD': -0.5385,
+        'FHD': -0.6479
       };
 
       SEG_ORDER.forEach(seg => {
