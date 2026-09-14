@@ -1,3 +1,10 @@
+"""
+Build 2026 Q1 Baseline and Simulation Meta-DB for 2027 Q1 Simulator
+- Sources:
+  1. DATA/processed/elasticity_results_42m.json (42M Panel WLS Regression Models)
+  2. DATA/processed/panel_regression_data_42m.csv (42M Panel Dataset for 2026 Q1 Baseline)
+- Output: dashboard/simulation_data.json
+"""
 import os
 import json
 import pandas as pd
@@ -5,68 +12,29 @@ import numpy as np
 
 DATA_DIR = r"d:\TV 유럽영업\15. AX Task\2026 AX 실행과제\12. 가격 탄력성 회귀분석\DATA"
 DASHBOARD_DIR = r"d:\TV 유럽영업\15. AX Task\2026 AX 실행과제\12. 가격 탄력성 회귀분석\dashboard"
-RESULTS_18M_PATH = os.path.join(DATA_DIR, "processed", "elasticity_results_18m.json")
-PANEL_DATA_PATH = os.path.join(DATA_DIR, "processed", "panel_regression_data_18m.csv")
+RESULTS_42M_PATH = os.path.join(DATA_DIR, "processed", "elasticity_results_42m.json")
+PANEL_DATA_PATH = os.path.join(DATA_DIR, "processed", "panel_regression_data_42m.csv")
 OUT_JSON_PATH = os.path.join(DASHBOARD_DIR, "simulation_data.json")
 
-# Load 18m models
-with open(RESULTS_18M_PATH, 'r', encoding='utf-8') as f:
-    results_18m = json.load(f)
+print("=================================================================", flush=True)
+print("  STEP 1: LOADING 42M WLS REGRESSION RESULTS", flush=True)
+print("=================================================================", flush=True)
 
-# Market price elasticity stats (Controlled Panel OLS: ln(Market_Units) ~ ln(Market_ASP) + ln(Total_TV_Units) + TimeTrend + IsQ4 + Country_FE)
-# Resolves omitted variable bias where macro TV demand shifts and Black Friday holiday surges confounded pure price elasticity
-market_price_elasticity = {
-    "OLED": {
-        "elasticity": -1.017160,
-        "p_value": 8.96e-10,
-        "bse": 0.161274,
-        "r2": 0.986007,
-        "total_tv_coeff": 0.824050,
-        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
-    },
-    "QNED_MiniLED": {
-        "elasticity": -0.562747,
-        "p_value": 1.12e-08,
-        "bse": 0.096071,
-        "r2": 0.991575,
-        "total_tv_coeff": 0.929727,
-        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
-    },
-    "NanoCell_UHD": {
-        "elasticity": -0.801876,
-        "p_value": 1.37e-09,
-        "bse": 0.128627,
-        "r2": 0.993040,
-        "total_tv_coeff": 0.848086,
-        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
-    },
-    "FHD": {
-        "elasticity": -0.587374,
-        "p_value": 0.008998,
-        "bse": 0.223525,
-        "r2": 0.987370,
-        "total_tv_coeff": 0.780905,
-        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
-    }
-}
+with open(RESULTS_42M_PATH, 'r', encoding='utf-8') as f:
+    results_42m = json.load(f)
 
-for seg, mkt_stat in market_price_elasticity.items():
-    if seg in results_18m['models']:
-        results_18m['models'][seg]['market_price_elasticity'] = mkt_stat
+print(f"Loaded 42M regression results version: {results_42m.get('pipeline_version')}", flush=True)
 
-ms_elasticity_map = {
-    "OLED": -1.8886,
-    "QNED_MiniLED": -1.7272,
-    "NanoCell_UHD": -2.0360,
-    "FHD": -1.2500
-}
-for seg, ms_el in ms_elasticity_map.items():
-    if seg in results_18m['models']:
-        results_18m['models'][seg]['ms_elasticity'] = ms_el
+# Extract market price elasticity from 42m results
+market_price_elasticity = {}
+for seg, m in results_42m['models'].items():
+    if 'market_price_elasticity' in m:
+        market_price_elasticity[seg] = m['market_price_elasticity']
 
-# Load panel data and filter 2026 Q1
+# Load panel data and filter 2026 Q1 baseline (Jan, Feb, Mar 2026)
 df = pd.read_csv(PANEL_DATA_PATH)
 q1 = df[df['ym'].isin([202601, 202602, 202603])].copy()
+print(f"Filtered 2026 Q1 Baseline observations: {len(q1)}", flush=True)
 
 # Total Europe baseline
 ttl = q1.groupby('segment').agg({
@@ -110,10 +78,12 @@ official_stats_2026q1 = {
 }
 
 sim_data = {
-    "generated_at": "2026-09-07",
+    "generated_at": "2026-09-14",
+    "pipeline_version": "2.0_42m_wls",
+    "regression_period": "2023.01 ~ 2026.06 (42M Panel WLS)",
     "baseline_period": "2026 Q1",
     "target_sim_period": "2027 Q1",
-    "market_scope": "Europe Total (20 countries, excluding Poland & Croatia)",
+    "market_scope": f"Europe Total ({df['country'].nunique()} countries, excluding Poland & Croatia)",
     "official_stats_2026q1": official_stats_2026q1,
     "competitor_cases": {
         "case1": {
@@ -133,11 +103,17 @@ sim_data = {
             "oled_follow_rate": 1.0,
             "non_oled_follow_rate": 0.50,
             "description": "OLED 100% 동등 인상, 기타 제품군 50% 수준 인상"
+        },
+        "case4": {
+            "name": "Case 4 (전 제품 경쟁사 동결 / 단독 인상)",
+            "oled_follow_rate": 0.0,
+            "non_oled_follow_rate": 0.0,
+            "description": "전 제품군(OLED 포함) 경쟁사 가격 동결 (0% 추종, 단독 인상)"
         }
     },
     "market_price_elasticity": market_price_elasticity,
-    "models": results_18m['models'],
-    "comparison_table": results_18m['comparison'],
+    "models": results_42m['models'],
+    "comparison_table": results_42m['comparison'],
     "baseline_summary": baseline_summary,
     "country_baseline": country_baseline
 }
@@ -145,4 +121,5 @@ sim_data = {
 with open(OUT_JSON_PATH, 'w', encoding='utf-8') as f:
     json.dump(sim_data, f, indent=2, ensure_ascii=False)
 
-print(f"Successfully generated {OUT_JSON_PATH} with 2026 Q1 baseline and market price elasticity!")
+print(f"[SUCCESS] Successfully generated simulation dataset: {OUT_JSON_PATH}", flush=True)
+print(f"2026 Q1 Europe Baseline: LG Units = {official_stats_2026q1['lg_units']:,.0f}, Volume M/S = {official_stats_2026q1['lg_volume_ms']:.1f}%", flush=True)

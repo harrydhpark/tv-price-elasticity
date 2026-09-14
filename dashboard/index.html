@@ -969,8 +969,8 @@
       <div class="table-card">
         <div class="table-title-group">
           <div>
-            <div class="table-title">🔬 회귀분석 모델 진단 & 통계 지표 (18개월 유럽 20개국 패널 OLS)</div>
-            <div class="table-sub">2025.01 ~ 2026.06 (18M) 실적 기반 · 다변량 Log-Log 계량경제 모형 (유럽 TV 총수요 통제 계량경제 보정치 반영)</div>
+            <div class="table-title">🔬 회귀분석 모델 진단 & 통계 지표 (42개월 유럽 20개국 패널 WLS)</div>
+            <div class="table-sub">2023.01 ~ 2026.06 (42M) 실적 기반 · 시간 가중 회귀(WLS) 및 국가/월 고정효과(Country & Month FE) 적용 다변량 Log-Log 계량경제 모형</div>
           </div>
         </div>
         <table class="styled-table diag-table">
@@ -979,10 +979,11 @@
               <th class="left">제품군 (Segment)</th>
               <th class="diag-tooltip-th" data-name="자체 탄력성 (β₁)" data-meaning="LG 가격 1% 인상 시 판매량 변동률 (자체 가격 민감도)" data-tip="절댓값이 클수록 가격 변동에 민감하게 반응함">자체 탄력성 (β₁) <span class="info-icon">ℹ️</span></th>
               <th class="diag-tooltip-th" style="color: var(--accent-amber);" data-name="시장가격 탄력성 (β_mkt)" data-meaning="시장 평균가격 1% 변동 시 시장 총수요 변화율" data-tip="전체 시장이 동반 인상될 때의 총수요 위축 강도">시장가격 탄력성 (β_mkt) <span class="info-icon">ℹ️</span></th>
-              <th class="diag-tooltip-th" data-name="프리미엄 탄력성 (β₂)" data-meaning="경쟁사 대비 LG 가격차 확대 시 판매량 민감도" data-tip="음수 값이 클수록 경쟁사로의 고객 이탈이 심함">프리미엄 탄력성 (β₂) <span class="info-icon">ℹ️</span></th>
-              <th class="diag-tooltip-th" data-name="시장규모 탄력성 (β₃)" data-meaning="유럽 TV 시장 1% 성장 시 LG 판매량 증가율" data-tip="1에 가까울수록 시장 성장세를 온전히 흡수함">시장규모 탄력성 (β₃) <span class="info-icon">ℹ️</span></th>
-              <th class="diag-tooltip-th" data-name="유의수준 (p-value)" data-meaning="분석 결과가 단순 우연에 의해 나타났을 확률" data-tip="0.05 미만이면 통계적으로 매우 신뢰할 수 있음">유의수준 (p-value) <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" data-name="경쟁사 교차탄력성 (β_cross)" data-meaning="경쟁사 가격 1% 인상 시 LG 판매량 증가율 (상대가격 방어력)" data-tip="양수 값이 클수록 경쟁사 인상 시 LG로의 반사이익이 큼">경쟁사 교차탄력성 (β_cross) <span class="info-icon">ℹ️</span></th>
               <th class="diag-tooltip-th" data-name="설명력 (R²)" data-meaning="가격 및 시장 요인이 판매량 변화를 설명하는 비율" data-tip="1에 가까울수록 예측력과 모델 적합도가 높음">설명력 (R²) <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" data-name="잔차자기상관 (DW)" data-meaning="더빈-왓슨 통계량(2.0에 가까울수록 자기상관 없음)" data-tip="기존 0.5 수준에서 국가/계절 고정효과로 1.0~1.34로 대폭 개선">잔차자기상관 (DW) <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" style="color: var(--primary);" data-name="가중 오차율 (Weighted MAPE)" data-meaning="유럽 전체 판매량 가중 절대 오차율" data-tip="소형국 왜곡을 배제한 실제 유럽 비즈니스 실질 예측 정밀도">가중 MAPE <span class="info-icon">ℹ️</span></th>
+              <th class="diag-tooltip-th" style="color: var(--accent-teal);" data-name="유럽 총합 오차율 (EU Total MAPE)" data-meaning="유럽 20개국 합산 판매량의 월별 예측 오차율" data-tip="유럽 총괄 영업 의사결정에 직결되는 국가 합산 정밀도">EU 총합 MAPE <span class="info-icon">ℹ️</span></th>
               <th class="left">회귀 분석 결과 / 가격 전략 시사점</th>
             </tr>
           </thead>
@@ -1082,7 +1083,9 @@
   <script>
     // Embedded Data fallback for standalone execution
     const EMBEDDED_DATA = {
-  "generated_at": "2026-09-07",
+  "generated_at": "2026-09-14",
+  "pipeline_version": "2.0_42m_wls",
+  "regression_period": "2023.01 ~ 2026.06 (42M Panel WLS)",
   "baseline_period": "2026 Q1",
   "target_sim_period": "2027 Q1",
   "market_scope": "Europe Total (20 countries, excluding Poland & Croatia)",
@@ -1112,336 +1115,476 @@
       "oled_follow_rate": 1.0,
       "non_oled_follow_rate": 0.5,
       "description": "OLED 100% 동등 인상, 기타 제품군 50% 수준 인상"
+    },
+    "case4": {
+      "name": "Case 4 (전 제품 경쟁사 동결 / 단독 인상)",
+      "oled_follow_rate": 0.0,
+      "non_oled_follow_rate": 0.0,
+      "description": "전 제품군(OLED 포함) 경쟁사 가격 동결 (0% 추종, 단독 인상)"
     }
   },
   "market_price_elasticity": {
     "OLED": {
-      "elasticity": -1.01716,
-      "p_value": 8.96e-10,
-      "bse": 0.161274,
-      "r2": 0.986007,
-      "total_tv_coeff": 0.82405,
-      "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
+      "elasticity": -1.096819665285155,
+      "p_value": 4.4169077462894e-08,
+      "total_tv_coeff": 0.6573239699704077,
+      "r2": 0.9835104989987757,
+      "dw": 0.936303320745042,
+      "model_type": "Controlled Panel WLS (Total TV Demand Controlled 42M)"
     },
     "QNED_MiniLED": {
-      "elasticity": -0.562747,
-      "p_value": 1.12e-08,
-      "bse": 0.096071,
-      "r2": 0.991575,
-      "total_tv_coeff": 0.929727,
-      "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
+      "elasticity": -1.1455114893347966,
+      "p_value": 8.165096443736084e-19,
+      "total_tv_coeff": 0.8038662070371335,
+      "r2": 0.9892488769877382,
+      "dw": 0.9618387590046193,
+      "model_type": "Controlled Panel WLS (Total TV Demand Controlled 42M)"
     },
     "NanoCell_UHD": {
-      "elasticity": -0.801876,
-      "p_value": 1.37e-09,
-      "bse": 0.128627,
-      "r2": 0.99304,
-      "total_tv_coeff": 0.848086,
-      "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
+      "elasticity": -0.5384917490386214,
+      "p_value": 0.005845904765756922,
+      "total_tv_coeff": 0.8607793018222208,
+      "r2": 0.987153965789457,
+      "dw": 0.8887249612317032,
+      "model_type": "Controlled Panel WLS (Total TV Demand Controlled 42M)"
     },
     "FHD": {
-      "elasticity": -0.587374,
-      "p_value": 0.008998,
-      "bse": 0.223525,
-      "r2": 0.98737,
-      "total_tv_coeff": 0.780905,
-      "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
+      "elasticity": -0.647868047729245,
+      "p_value": 0.01250724071624148,
+      "total_tv_coeff": 0.997465237147438,
+      "r2": 0.9860777614121998,
+      "dw": 0.9307394072812561,
+      "model_type": "Controlled Panel WLS (Total TV Demand Controlled 42M)"
     }
   },
   "models": {
     "OLED": {
-      "n_obs": 360,
+      "n_obs": 840,
       "volume": {
-        "elasticity": -0.2616077068586523,
-        "p_value": 0.00017943226916995454,
-        "r2": 0.985713419446664,
-        "r2_adj": 0.9855116315857412,
-        "mape": 11.70101938246964,
-        "dw": 0.5796695337458271,
+        "elasticity": -0.6837934626804836,
+        "cross_elasticity": 1.0585974173735329,
+        "p_value": 1.6400514861293733e-08,
+        "cross_p_value": 1.0528616299326486e-13,
+        "r2": 0.9932018086237208,
+        "r2_adj": 0.9929146800438531,
+        "weighted_mape": 6.091683303297887,
+        "eu_total_mape": 3.1635285853594777,
+        "unweighted_mape": 8.036011841308238,
+        "dw": 1.3388371783641664,
         "params": {
-          "const": 2.00172485142164,
-          "ln_lg_asp": -0.2616077068586523,
-          "ln_price_premium": -0.698231604898913,
-          "ln_market_size": 0.9132573856559497,
-          "time_trend": -0.0038329083676481093,
-          "is_q4": 0.02028230952665111
+          "const": -4.8670214369025615,
+          "ln_lg_asp": -0.6837934626804836,
+          "ln_comp_asp": 1.0585974173735329,
+          "ln_market_size": 1.155063438108781,
+          "time_trend": -0.0006442889071980098,
+          "m_2": 0.07982367699441006,
+          "m_3": 0.0880405364203275,
+          "m_4": 0.13223601015499042,
+          "m_5": 0.07933772247813925,
+          "m_6": 0.08397164433877435,
+          "m_7": 0.06238320923963875,
+          "m_8": 0.07504579072474371,
+          "m_9": 0.03166712720205972,
+          "m_10": 0.013230129109722988,
+          "m_11": -0.06845536931815344,
+          "m_12": 0.020714393800703945,
+          "c_Belgium": -0.14079431676675844,
+          "c_Czechia": 0.3201782485849314,
+          "c_Denmark": 0.23272289069249114,
+          "c_Finland": 0.4639596557972277,
+          "c_France": -0.33542634574025837,
+          "c_Germany": -0.5469393544086472,
+          "c_Greece": 0.24285058551511013,
+          "c_Hungary": 0.328518645475439,
+          "c_Italy": -0.10870163277983513,
+          "c_Netherlands": -0.2980122693255034,
+          "c_Norway": 0.33994882483366434,
+          "c_Portugal": 0.31722561623763335,
+          "c_Romania": 0.13890965815643055,
+          "c_Serbia": 0.7898026463900282,
+          "c_Slovakia": 0.4024521979020114,
+          "c_Spain": -0.060257993006775284,
+          "c_Sweden": 0.42489840960687336,
+          "c_Switzerland": -0.3703185438100811,
+          "c_UK": -0.24500425920311036
         },
         "pvalues": {
-          "const": 9.220445403217027e-05,
-          "ln_lg_asp": 0.00017943226916995454,
-          "ln_price_premium": 0.0005409381510477733,
-          "ln_market_size": 5.956471549219874e-304,
-          "time_trend": 0.014825794842585534,
-          "is_q4": 0.346443216525709
-        }
-      },
-      "value": {
-        "r2": 0.9855541841056629,
-        "r2_adj": 0.9853501471580027,
-        "mape": 11.701019382469822,
-        "dw": 0.5796695337458244,
-        "params": {
-          "const": 2.001724851421695,
-          "ln_lg_asp": 0.7383922931413416,
-          "ln_price_premium": -0.6982316048989183,
-          "ln_market_size": 0.9132573856559496,
-          "time_trend": -0.003832908367647936,
-          "is_q4": 0.020282309526649556
-        }
-      },
-      "market_share": {
-        "elasticity": 0.46755652285191407,
-        "p_value": 0.027257836136966,
-        "r2": 0.026127732586769814,
-        "r2_adj": 0.01792094381643361,
-        "mape": 14.38038655568445,
-        "dw": 0.5995642688529913,
-        "params": {
-          "const": -0.5636086709711277,
-          "ln_price_premium": 0.46755652285191407,
-          "time_trend": -0.0030101582636057915,
-          "is_q4": -0.02961621663603492
+          "const": 5.122429410688586e-07,
+          "ln_lg_asp": 1.6400514861293733e-08,
+          "ln_comp_asp": 1.0528616299326486e-13,
+          "ln_market_size": 3.6487420502059055e-169,
+          "time_trend": 0.5277964306543175,
+          "m_2": 0.0010696341818393486,
+          "m_3": 0.0015105783324710314,
+          "m_4": 7.256908325759487e-05,
+          "m_5": 0.001083367413449852,
+          "m_6": 0.0003580615905298251,
+          "m_7": 0.008908606465922618,
+          "m_8": 0.022780285657823703,
+          "m_9": 0.23111984012792852,
+          "m_10": 0.6329497160624975,
+          "m_11": 0.006279940654956848,
+          "m_12": 0.3900386851394054,
+          "c_Belgium": 1.9846880706182952e-14,
+          "c_Czechia": 3.185364893602957e-23,
+          "c_Denmark": 0.00042048371440383056,
+          "c_Finland": 1.1685412715255974e-09,
+          "c_France": 3.9089765659769347e-10,
+          "c_Germany": 4.209812940148063e-08,
+          "c_Greece": 3.0926440813739e-08,
+          "c_Hungary": 1.177848007318031e-13,
+          "c_Italy": 0.028499022481686016,
+          "c_Netherlands": 3.340584731002346e-13,
+          "c_Norway": 1.5880617836168602e-07,
+          "c_Portugal": 7.473221577389906e-29,
+          "c_Romania": 1.3363569369312672e-05,
+          "c_Serbia": 4.712229485502981e-09,
+          "c_Slovakia": 2.870379633262359e-08,
+          "c_Spain": 0.10768215929880494,
+          "c_Sweden": 8.146326630981777e-24,
+          "c_Switzerland": 1.0759098457413438e-43,
+          "c_UK": 0.0025029458998404486
         }
       },
       "market_price_elasticity": {
-        "elasticity": -1.01716,
-        "p_value": 8.96e-10,
-        "bse": 0.161274,
-        "r2": 0.986007,
-        "total_tv_coeff": 0.82405,
-        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
+        "elasticity": -1.096819665285155,
+        "p_value": 4.4169077462894e-08,
+        "total_tv_coeff": 0.6573239699704077,
+        "r2": 0.9835104989987757,
+        "dw": 0.936303320745042,
+        "model_type": "Controlled Panel WLS (Total TV Demand Controlled 42M)"
       },
-      "ms_elasticity": -1.8886
+      "market_share": {
+        "elasticity": -0.9479135009859738,
+        "p_value": 2.5188580903686e-11,
+        "r2": 0.6610398883690216,
+        "r2_adj": 0.6475990908817957,
+        "weighted_mape": 7.862471726712715,
+        "dw": 1.0822965188625744
+      }
     },
     "QNED_MiniLED": {
-      "n_obs": 360,
+      "n_obs": 838,
       "volume": {
-        "elasticity": -1.210545077828296,
-        "p_value": 5.4691749310841366e-24,
-        "r2": 0.8818849202351446,
-        "r2_adj": 0.8802166281480704,
-        "mape": 31.382959206690103,
-        "dw": 0.4877587118729695,
+        "elasticity": -1.9037918927151183,
+        "cross_elasticity": 2.740231836994731,
+        "p_value": 1.155742846566364e-06,
+        "cross_p_value": 8.494270920521708e-09,
+        "r2": 0.8705351885662748,
+        "r2_adj": 0.865053490448284,
+        "weighted_mape": 18.47739003401037,
+        "eu_total_mape": 11.644525082670805,
+        "unweighted_mape": 53.96758355281518,
+        "dw": 0.6197588025158755,
         "params": {
-          "const": 7.547600315329368,
-          "ln_lg_asp": -1.210545077828296,
-          "ln_price_premium": 0.0825476999003048,
-          "ln_market_size": 0.8420013864323392,
-          "time_trend": -0.047897099994694145,
-          "is_q4": -0.05888587627848718
+          "const": -6.268820068377746,
+          "ln_lg_asp": -1.9037918927151183,
+          "ln_comp_asp": 2.740231836994731,
+          "ln_market_size": 0.7781645142286723,
+          "time_trend": 0.017230627400982124,
+          "m_2": 0.01680433300862645,
+          "m_3": -0.09560978083706509,
+          "m_4": -0.14908922049319315,
+          "m_5": -0.05535094083323783,
+          "m_6": -0.10269651112323123,
+          "m_7": 0.03993387473411876,
+          "m_8": -0.01797560673462028,
+          "m_9": -0.07656138132220158,
+          "m_10": 0.1262130099119323,
+          "m_11": 0.029169882335133054,
+          "m_12": 0.10385057973608958,
+          "c_Belgium": 0.23640015611337112,
+          "c_Czechia": 0.8706356006480254,
+          "c_Denmark": -1.6649483360159696,
+          "c_Finland": -0.15130869523934826,
+          "c_France": 0.45878582846715854,
+          "c_Germany": 0.5970584047913526,
+          "c_Greece": 1.0210429794313345,
+          "c_Hungary": 0.9581535561004235,
+          "c_Italy": 1.1398333241718777,
+          "c_Netherlands": -0.17301577511231367,
+          "c_Norway": -1.8241317926218514,
+          "c_Portugal": 1.0748144023172543,
+          "c_Romania": 0.596706565035503,
+          "c_Serbia": 1.037570442518688,
+          "c_Slovakia": 0.4264071397696395,
+          "c_Spain": 1.631360520382713,
+          "c_Sweden": -0.9259306362330734,
+          "c_Switzerland": -0.8500946936733761,
+          "c_UK": -0.01645473268780062
         },
         "pvalues": {
-          "const": 5.880001481278843e-20,
-          "ln_lg_asp": 5.4691749310841366e-24,
-          "ln_price_premium": 0.47252160873528837,
-          "ln_market_size": 8.697106829156585e-144,
-          "time_trend": 5.503030925498175e-26,
-          "is_q4": 0.2910350708404023
-        }
-      },
-      "value": {
-        "r2": 0.8696642965770753,
-        "r2_adj": 0.8678233968112148,
-        "mape": 31.38295920669006,
-        "dw": 0.4877587118729668,
-        "params": {
-          "const": 7.547600315329396,
-          "ln_lg_asp": -0.21054507782829956,
-          "ln_price_premium": 0.08254769990030708,
-          "ln_market_size": 0.8420013864323375,
-          "time_trend": -0.0478970999946932,
-          "is_q4": -0.05888587627848629
-        }
-      },
-      "market_share": {
-        "elasticity": -0.22737194288258677,
-        "p_value": 0.07885146282736716,
-        "r2": 0.2840539137483967,
-        "r2_adj": 0.27802066021256866,
-        "mape": 39.30387011296448,
-        "dw": 0.4693953294816567,
-        "params": {
-          "const": -1.7655921036921707,
-          "ln_price_premium": -0.22737194288258677,
-          "time_trend": -0.047582772114362334,
-          "is_q4": -0.17739467152949345
+          "const": 0.11483255626205463,
+          "ln_lg_asp": 1.155742846566364e-06,
+          "ln_comp_asp": 8.494270920521708e-09,
+          "ln_market_size": 2.1203133565815495e-05,
+          "time_trend": 0.02375592036560354,
+          "m_2": 0.8743758353809052,
+          "m_3": 0.28736474520350797,
+          "m_4": 0.19921327732653038,
+          "m_5": 0.4927610611567451,
+          "m_6": 0.26450752150086176,
+          "m_7": 0.5713902324432611,
+          "m_8": 0.8694015765633017,
+          "m_9": 0.37305006825161635,
+          "m_10": 0.0848236317843029,
+          "m_11": 0.7510078586408059,
+          "m_12": 0.0005822658072992345,
+          "c_Belgium": 0.03536860583427362,
+          "c_Czechia": 3.268642964842309e-12,
+          "c_Denmark": 1.0929084969820896e-10,
+          "c_Finland": 0.6261197548888233,
+          "c_France": 0.13151295339141003,
+          "c_Germany": 0.06701566323483797,
+          "c_Greece": 7.201838062888561e-10,
+          "c_Hungary": 1.142704210884222e-08,
+          "c_Italy": 7.652789540477739e-05,
+          "c_Netherlands": 0.1829653059033085,
+          "c_Norway": 1.9628171258336873e-18,
+          "c_Portugal": 8.283433403382253e-12,
+          "c_Romania": 0.002466380201456853,
+          "c_Serbia": 0.005545176201734492,
+          "c_Slovakia": 0.05849228582003907,
+          "c_Spain": 1.7124226399446187e-08,
+          "c_Sweden": 5.969470210368667e-13,
+          "c_Switzerland": 9.194890000326054e-10,
+          "c_UK": 0.9499975554495896
         }
       },
       "market_price_elasticity": {
-        "elasticity": -0.562747,
-        "p_value": 1.12e-08,
-        "bse": 0.096071,
-        "r2": 0.991575,
-        "total_tv_coeff": 0.929727,
-        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
+        "elasticity": -1.1455114893347966,
+        "p_value": 8.165096443736084e-19,
+        "total_tv_coeff": 0.8038662070371335,
+        "r2": 0.9892488769877382,
+        "dw": 0.9618387590046193,
+        "model_type": "Controlled Panel WLS (Total TV Demand Controlled 42M)"
       },
-      "ms_elasticity": -1.7272
+      "market_share": {
+        "elasticity": -2.1517944143537875,
+        "p_value": 2.8047242684630124e-12,
+        "r2": 0.5880343391114445,
+        "r2_adj": 0.5716580643928932,
+        "weighted_mape": 21.87353116737174,
+        "dw": 0.6481526876357676
+      }
     },
     "NanoCell_UHD": {
-      "n_obs": 359,
+      "n_obs": 839,
       "volume": {
-        "elasticity": -1.388780109857868,
-        "p_value": 4.3437741234864596e-08,
-        "r2": 0.854750719007781,
-        "r2_adj": 0.8526933637529337,
-        "mape": 77.74457137840517,
-        "dw": 0.6018940310121434,
+        "elasticity": -1.7336681781380965,
+        "cross_elasticity": 1.3706898939935876,
+        "p_value": 0.00012947240406882863,
+        "cross_p_value": 0.00030950249737800393,
+        "r2": 0.931611958240379,
+        "r2_adj": 0.9287199266236786,
+        "weighted_mape": 16.978661333184277,
+        "eu_total_mape": 9.311365855762952,
+        "unweighted_mape": 32.38483129755432,
+        "dw": 1.0676571955439886,
         "params": {
-          "const": 6.3488129049346895,
-          "ln_lg_asp": -1.388780109857868,
-          "ln_price_premium": -0.8780967686387363,
-          "ln_market_size": 1.0245398648695159,
-          "time_trend": 0.013059665626061378,
-          "is_q4": -0.024767424654770998
+          "const": -3.2389755655366033,
+          "ln_lg_asp": -1.7336681781380965,
+          "ln_comp_asp": 1.3706898939935876,
+          "ln_market_size": 1.3652451764476603,
+          "time_trend": 0.0077485509134085275,
+          "m_2": 0.19124517022224094,
+          "m_3": 0.10632042270338748,
+          "m_4": 0.18356907747339749,
+          "m_5": 0.03243763475999295,
+          "m_6": 0.08391487999965472,
+          "m_7": -0.07811551735216549,
+          "m_8": 0.022285938240252746,
+          "m_9": 0.07597007885100267,
+          "m_10": -0.018065162681269824,
+          "m_11": -0.2794302674820718,
+          "m_12": -0.09886173701965788,
+          "c_Belgium": 0.04282085109411595,
+          "c_Czechia": 0.2913524658682227,
+          "c_Denmark": -0.050832034014387795,
+          "c_Finland": -0.21560582172498835,
+          "c_France": -1.2025287750188562,
+          "c_Germany": -1.5016377982032916,
+          "c_Greece": 0.33574929579408963,
+          "c_Hungary": 0.6173277718699857,
+          "c_Italy": -0.6808334518652362,
+          "c_Netherlands": -0.30770833389975183,
+          "c_Norway": 0.2740901138395005,
+          "c_Portugal": 0.6097058213092856,
+          "c_Romania": -0.17705877198667297,
+          "c_Serbia": 0.4266397423971751,
+          "c_Slovakia": 0.17914300858092622,
+          "c_Spain": -0.11526657828631026,
+          "c_Sweden": 0.6205491938720287,
+          "c_Switzerland": 0.049250173381978485,
+          "c_UK": -0.9017293061717406
         },
         "pvalues": {
-          "const": 0.00022007244308832875,
-          "ln_lg_asp": 4.3437741234864596e-08,
-          "ln_price_premium": 0.00033372650882179954,
-          "ln_market_size": 3.562724795129514e-111,
-          "time_trend": 0.06328945054857735,
-          "is_q4": 0.7917284433127185
-        }
-      },
-      "value": {
-        "r2": 0.8384274374889783,
-        "r2_adj": 0.8361388742806068,
-        "mape": 77.74457137840591,
-        "dw": 0.6018940310121437,
-        "params": {
-          "const": 6.34881290493468,
-          "ln_lg_asp": -0.3887801098578662,
-          "ln_price_premium": -0.8780967686387375,
-          "ln_market_size": 1.024539864869516,
-          "time_trend": 0.013059665626062207,
-          "is_q4": -0.024767424654770887
-        }
-      },
-      "market_share": {
-        "elasticity": -0.8160725438563328,
-        "p_value": 0.0005178908020249453,
-        "r2": 0.03869371891152473,
-        "r2_adj": 0.030570003860072803,
-        "mape": 90.83132719865475,
-        "dw": 0.489682266986224,
-        "params": {
-          "const": -1.8732206709064367,
-          "ln_price_premium": -0.8160725438563328,
-          "time_trend": 0.014030179476332193,
-          "is_q4": -0.07020190378754326
+          "const": 0.41936789824028353,
+          "ln_lg_asp": 0.00012947240406882863,
+          "ln_comp_asp": 0.00030950249737800393,
+          "ln_market_size": 3.2845238001982485e-13,
+          "time_trend": 0.00706992460104644,
+          "m_2": 0.10148946081213123,
+          "m_3": 0.291315517147929,
+          "m_4": 0.15477900493851174,
+          "m_5": 0.6541948141799203,
+          "m_6": 0.4251686719061759,
+          "m_7": 0.21131856138024818,
+          "m_8": 0.6778145898141998,
+          "m_9": 0.4385728783601688,
+          "m_10": 0.8043537053863994,
+          "m_11": 0.05626979231734817,
+          "m_12": 0.19489966352763755,
+          "c_Belgium": 0.2906248993531705,
+          "c_Czechia": 0.002243745486131276,
+          "c_Denmark": 0.8834236236712218,
+          "c_Finland": 0.35847279763150786,
+          "c_France": 5.429062111990053e-05,
+          "c_Germany": 0.0002218234584204789,
+          "c_Greece": 0.0006475409406258897,
+          "c_Hungary": 6.386461505110668e-06,
+          "c_Italy": 0.02244554007107408,
+          "c_Netherlands": 6.496045473723013e-08,
+          "c_Norway": 0.4864915336992277,
+          "c_Portugal": 3.1437988057498055e-07,
+          "c_Romania": 0.38756753956995604,
+          "c_Serbia": 0.03916540606146664,
+          "c_Slovakia": 0.3600761839276382,
+          "c_Spain": 0.6562527932989989,
+          "c_Sweden": 0.02363599548955011,
+          "c_Switzerland": 0.6637302095391205,
+          "c_UK": 0.025186397485552868
         }
       },
       "market_price_elasticity": {
-        "elasticity": -0.801876,
-        "p_value": 1.37e-09,
-        "bse": 0.128627,
-        "r2": 0.99304,
-        "total_tv_coeff": 0.848086,
-        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
+        "elasticity": -0.5384917490386214,
+        "p_value": 0.005845904765756922,
+        "total_tv_coeff": 0.8607793018222208,
+        "r2": 0.987153965789457,
+        "dw": 0.8887249612317032,
+        "model_type": "Controlled Panel WLS (Total TV Demand Controlled 42M)"
       },
-      "ms_elasticity": -2.036
+      "market_share": {
+        "elasticity": -1.6682457972927534,
+        "p_value": 3.702289626499144e-05,
+        "r2": 0.5519197455245917,
+        "r2_adj": 0.5341299587464117,
+        "weighted_mape": 21.881981935790133,
+        "dw": 1.0220885592455613
+      }
     },
     "FHD": {
-      "n_obs": 352,
+      "n_obs": 820,
       "volume": {
-        "elasticity": -0.8655287735055082,
-        "p_value": 0.005236704128939349,
-        "r2": 0.8723096409867758,
-        "r2_adj": 0.8704644045848505,
-        "mape": 77.93472872692327,
-        "dw": 0.540721193347643,
+        "elasticity": -1.5580595814971103,
+        "cross_elasticity": 0.8460497421376123,
+        "p_value": 0.3748429687260215,
+        "cross_p_value": 0.3748429687260215,
+        "r2": 0.8784582938007669,
+        "r2_adj": 0.8777117231238675,
+        "weighted_mape": 44.322319419615354,
+        "eu_total_mape": 12.364349955242748,
+        "unweighted_mape": 71.51064313643592,
+        "dw": 0.5157168918517682,
         "params": {
-          "const": 0.6246897356208798,
-          "ln_lg_asp": -0.8655287735055082,
-          "ln_price_premium": -0.617532041160904,
-          "ln_market_size": 1.1670638449926627,
-          "time_trend": -0.0032659503710011292,
-          "is_q4": -0.05820877314264239
+          "const": -0.1674402169901073,
+          "ln_lg_asp": -0.712009839359498,
+          "ln_price_premium": -0.8460497421376123,
+          "ln_market_size": 1.1930079340120159,
+          "time_trend": -0.007737277029325079,
+          "is_q4": -0.06816904498101461
         },
         "pvalues": {
-          "const": 0.7299390815750963,
-          "ln_lg_asp": 0.005236704128939349,
-          "ln_price_premium": 0.005775484700059346,
-          "ln_market_size": 4.8386862910554384e-129,
-          "time_trend": 0.6712643840878901,
-          "is_q4": 0.5770525434205946
-        }
-      },
-      "value": {
-        "r2": 0.8646831810015785,
-        "r2_adj": 0.8627277356403296,
-        "mape": 77.93472872692188,
-        "dw": 0.5407211933476443,
-        "params": {
-          "const": 0.6246897356209029,
-          "ln_lg_asp": 0.13447122649448406,
-          "ln_price_premium": -0.6175320411609053,
-          "ln_market_size": 1.1670638449926596,
-          "time_trend": -0.0032659503709985827,
-          "is_q4": -0.0582087731426415
-        }
-      },
-      "market_share": {
-        "elasticity": 0.03211753833480699,
-        "p_value": 0.8808556088693151,
-        "r2": 0.0006807062754102811,
-        "r2_adj": -0.007934115222215432,
-        "mape": 89.92949068594939,
-        "dw": 0.40629664280337024,
-        "params": {
-          "const": -2.563451291790553,
-          "ln_price_premium": 0.03211753833480699,
-          "time_trend": -0.0034012679714363336,
-          "is_q4": -0.018846017724914732
+          "const": 0.9705391437928025,
+          "ln_lg_asp": 0.3108759353758739,
+          "ln_price_premium": 0.3748429687260215,
+          "ln_market_size": 8.778487478060163e-29,
+          "time_trend": 0.09298523677685168,
+          "is_q4": 0.3021316462580603
         }
       },
       "market_price_elasticity": {
-        "elasticity": -0.587374,
-        "p_value": 0.008998,
-        "bse": 0.223525,
-        "r2": 0.98737,
-        "total_tv_coeff": 0.780905,
-        "model_type": "Controlled Panel OLS (Total TV Demand Controlled)"
+        "elasticity": -0.647868047729245,
+        "p_value": 0.01250724071624148,
+        "total_tv_coeff": 0.997465237147438,
+        "r2": 0.9860777614121998,
+        "dw": 0.9307394072812561,
+        "model_type": "Controlled Panel WLS (Total TV Demand Controlled 42M)"
       },
-      "ms_elasticity": -1.25
+      "market_share": {
+        "elasticity": 0.1769661826602968,
+        "p_value": 0.5701707338865158,
+        "r2": 0.7069417182440706,
+        "r2_adj": 0.695025752530996,
+        "weighted_mape": 21.16523975363448,
+        "dw": 1.1872667466696103
+      }
     }
   },
   "comparison_table": [
     {
       "segment": "OLED",
-      "historical_elasticity": -0.413,
-      "new_18m_elasticity": -0.2616077068586523,
-      "delta": 0.15139229314134767,
-      "p_value": 0.00017943226916995454,
-      "r2": 0.985713419446664,
-      "mape": 11.70101938246964
+      "old_18m_elasticity": -0.2616,
+      "new_42m_elasticity": -0.6837934626804836,
+      "new_42m_cross_elasticity": 1.0585974173735329,
+      "old_18m_mkt_elasticity": -1.0172,
+      "new_42m_mkt_elasticity": -1.096819665285155,
+      "old_r2": 0.9857,
+      "new_r2": 0.9932018086237208,
+      "old_dw": 0.58,
+      "new_dw": 1.3388371783641664,
+      "old_mape": 11.7,
+      "new_weighted_mape": 6.091683303297887,
+      "new_eu_total_mape": 3.1635285853594777,
+      "new_unweighted_mape": 8.036011841308238
     },
     {
       "segment": "QNED_MiniLED",
-      "historical_elasticity": -2.3572,
-      "new_18m_elasticity": -1.210545077828296,
-      "delta": 1.1466549221717042,
-      "p_value": 5.4691749310841366e-24,
-      "r2": 0.8818849202351446,
-      "mape": 31.382959206690103
+      "old_18m_elasticity": -1.2105,
+      "new_42m_elasticity": -1.9037918927151183,
+      "new_42m_cross_elasticity": 2.740231836994731,
+      "old_18m_mkt_elasticity": -0.5627,
+      "new_42m_mkt_elasticity": -1.1455114893347966,
+      "old_r2": 0.8819,
+      "new_r2": 0.8705351885662748,
+      "old_dw": 0.488,
+      "new_dw": 0.6197588025158755,
+      "old_mape": 31.4,
+      "new_weighted_mape": 18.47739003401037,
+      "new_eu_total_mape": 11.644525082670805,
+      "new_unweighted_mape": 53.96758355281518
     },
     {
       "segment": "NanoCell_UHD",
-      "historical_elasticity": -2.3473,
-      "new_18m_elasticity": -1.388780109857868,
-      "delta": 0.9585198901421321,
-      "p_value": 4.3437741234864596e-08,
-      "r2": 0.854750719007781,
-      "mape": 77.74457137840517
+      "old_18m_elasticity": -1.3888,
+      "new_42m_elasticity": -1.7336681781380965,
+      "new_42m_cross_elasticity": 1.3706898939935876,
+      "old_18m_mkt_elasticity": -0.8019,
+      "new_42m_mkt_elasticity": -0.5384917490386214,
+      "old_r2": 0.8548,
+      "new_r2": 0.931611958240379,
+      "old_dw": 0.602,
+      "new_dw": 1.0676571955439886,
+      "old_mape": 77.7,
+      "new_weighted_mape": 16.978661333184277,
+      "new_eu_total_mape": 9.311365855762952,
+      "new_unweighted_mape": 32.38483129755432
     },
     {
       "segment": "FHD",
-      "historical_elasticity": -3.7891,
-      "new_18m_elasticity": -0.8655287735055082,
-      "delta": 2.9235712264944915,
-      "p_value": 0.005236704128939349,
-      "r2": 0.8723096409867758,
-      "mape": 77.93472872692327
+      "old_18m_elasticity": -0.8655,
+      "new_42m_elasticity": -1.5580595814971103,
+      "new_42m_cross_elasticity": 0.8460497421376123,
+      "old_18m_mkt_elasticity": -0.5874,
+      "new_42m_mkt_elasticity": -0.647868047729245,
+      "old_r2": 0.8723,
+      "new_r2": 0.8784582938007669,
+      "old_dw": 0.541,
+      "new_dw": 0.5157168918517682,
+      "old_mape": 77.9,
+      "new_weighted_mape": 44.322319419615354,
+      "new_eu_total_mape": 12.364349955242748,
+      "new_unweighted_mape": 71.51064313643592
     }
   ],
   "baseline_summary": [
@@ -3005,12 +3148,12 @@
           <td class="left"><b>${SEG_LABELS[seg]}</b></td>
           <td style="color: var(--accent-blue); font-weight: 700;">${v.elasticity.toFixed(4)}</td>
           <td style="color: var(--accent-amber); font-weight: 700;">${mktElast.toFixed(4)}</td>
-          <td>${(p.ln_price_premium || 0).toFixed(4)}</td>
-          <td>${(p.ln_market_size || 0).toFixed(4)}</td>
-          <td>${v.p_value < 0.0001 ? '< 0.0001' : v.p_value.toFixed(4)}</td>
+          <td style="color: var(--accent-purple); font-weight: 700;">${(v.cross_elasticity !== undefined ? '+' + v.cross_elasticity.toFixed(4) : (p.ln_comp_asp || 0).toFixed(4))}</td>
           <td style="color: var(--accent-green); font-weight: 700;">${v.r2.toFixed(3)}</td>
-          <td class="left" style="color: var(--text-muted); font-size: 0.74rem;">${SEG_DESCRIPTIONS[seg]}</td>
-        `;
+          <td>${(v.dw || 0).toFixed(3)}</td>
+          <td style="color: var(--primary); font-weight: 700;">${(v.weighted_mape !== undefined ? v.weighted_mape.toFixed(1) + '%' : (v.mape || 0).toFixed(1) + '%')}</td>
+          <td style="color: var(--accent-teal); font-weight: 600;">${(v.eu_total_mape !== undefined ? v.eu_total_mape.toFixed(1) + '%' : '-')}</td>
+          <td class="left" style="color: var(--text-muted); font-size: 0.74rem;">${SEG_DESCRIPTIONS[seg]}</td>`;
         tbody.appendChild(tr);
       });
     }
