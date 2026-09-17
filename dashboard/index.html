@@ -204,6 +204,38 @@
       color: var(--accent-blue);
       transform: translateY(-1px);
     }
+    .lang-switch {
+      display: inline-flex;
+      background: var(--bg-card);
+      border: 1.5px solid var(--border-color);
+      border-radius: 9999px;
+      padding: 2px;
+      box-shadow: var(--card-shadow);
+      user-select: none;
+      align-items: center;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+    .lang-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 0.28rem 0.65rem;
+      border-radius: 9999px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      line-height: 1;
+    }
+    .lang-btn:hover {
+      color: var(--text-main);
+    }
+    .lang-btn.active {
+      background-color: var(--preset-active-bg);
+      color: var(--preset-active-col);
+      border: 1px solid var(--preset-active-border);
+      box-shadow: 0 1px 3px rgba(2, 132, 199, 0.2);
+    }
     .badge {
       padding: 0.35rem 0.75rem;
       border-radius: 9999px;
@@ -878,17 +910,22 @@
   <header>
     <div class="header-left">
       <div class="header-title-group">
-        <h1>회귀분석 모델 기반 LG TV 유럽 영업 가격 탄력성 시뮬레이터</h1>
-        <p>유럽 20개국 42개월(2023.01~2026.06) 패널 WLS 회귀분석 기반 · 4대 경쟁사 반응 시나리오 동시 비교</p>
+        <h1 id="headerTitle">회귀분석 모델 기반 LG TV 유럽 영업 가격 탄력성 시뮬레이터</h1>
+        <p id="headerSubtitle">유럽 20개국 42개월(2023.01~2026.06) 패널 WLS 회귀분석 기반 · 4대 경쟁사 반응 시나리오 동시 비교</p>
       </div>
     </div>
     <div class="header-badges">
+      <!-- Language Switcher [KO | EN] -->
+      <div class="lang-switch" role="group" aria-label="Language Selector">
+        <button type="button" class="lang-btn active" id="btnLangKo" onclick="setLanguage('ko')" title="한국어">KO</button>
+        <button type="button" class="lang-btn" id="btnLangEn" onclick="setLanguage('en')" title="English">EN</button>
+      </div>
       <button class="btn-theme" id="btnThemeToggle" onclick="toggleTheme()" title="빔프로젝터용 밝은 모드 / 다크 모드 전환">
         <span id="themeIcon">☀️</span> <span id="themeText">프로젝터 모드</span>
       </button>
-      <span class="badge badge-primary">2026 Q1 Baseline</span>
-      <span class="badge badge-blue">42M WLS Model</span>
-      <button class="btn-fullscreen" onclick="toggleFullscreen()">전체화면</button>
+      <span class="badge badge-primary" id="badgeBaseline">2026 Q1 Baseline</span>
+      <span class="badge badge-blue" id="badgeModel">42M WLS Model</span>
+      <button class="btn-fullscreen" id="btnFullscreen" onclick="toggleFullscreen()">전체화면</button>
     </div>
   </header>
 
@@ -897,16 +934,16 @@
     <aside class="sidebar">
       <div class="card">
         <div class="card-title">
-          <span>🌍 분석 대상 권역</span>
+          <span id="sidebarScopeTitle">🌍 분석 대상 권역</span>
         </div>
         <select id="countrySelect" class="select-custom" onchange="onCountryChange()">
-          <option value="ALL">유럽 전체 (20개국 Total)</option>
+          <option value="ALL" id="optCountryAll">유럽 전체 (20개국 Total)</option>
         </select>
       </div>
 
       <div class="card">
         <div class="card-title">
-          <span>🎚️ LG TV 가격 인상율 시뮬레이션</span>
+          <span id="sidebarSimTitle">🎚️ LG TV 가격 인상율 시뮬레이션</span>
         </div>
 
         <div class="preset-group">
@@ -917,7 +954,7 @@
 
         <div class="control-group">
           <div class="control-header">
-            <span class="control-label">OLED TV</span>
+            <span class="control-label" id="lblSegOled">OLED TV</span>
             <span id="oledVal" class="control-val">+5%</span>
           </div>
           <input type="range" id="sliderOled" min="-10" max="20" step="1" value="5" oninput="onSliderChange()">
@@ -925,7 +962,7 @@
 
         <div class="control-group">
           <div class="control-header">
-            <span class="control-label">QNED / NanoCell / MiniLED</span>
+            <span class="control-label" id="lblSegQned">QNED / NanoCell / MiniLED</span>
             <span id="qnedVal" class="control-val">+5%</span>
           </div>
           <input type="range" id="sliderQned" min="-10" max="20" step="1" value="5" oninput="onSliderChange()">
@@ -933,7 +970,7 @@
 
         <div class="control-group">
           <div class="control-header">
-            <span class="control-label">일반 UHD 4K</span>
+            <span class="control-label" id="lblSegUhd">일반 UHD 4K</span>
             <span id="nanoVal" class="control-val">+5%</span>
           </div>
           <input type="range" id="sliderNano" min="-10" max="20" step="1" value="5" oninput="onSliderChange()">
@@ -941,7 +978,7 @@
 
         <div class="control-group">
           <div class="control-header">
-            <span class="control-label">FHD 이하</span>
+            <span class="control-label" id="lblSegFhd">FHD 이하</span>
             <span id="fhdVal" class="control-val">+5%</span>
           </div>
           <input type="range" id="sliderFhd" min="-10" max="20" step="1" value="5" oninput="onSliderChange()">
@@ -952,7 +989,7 @@
         </div>
       </div>
 
-      <div class="info-box">
+      <div class="info-box" id="sidebarInfoBox">
         <b>💡 경쟁사 가격 반응 3대 CASE 규칙</b><br>
         • <b>OLED</b>: 3개 케이스 모두 LG 인상률과 <b>100% 동등 인상</b><br>
         • <b>기타 세그먼트 (QNED, UHD, FHD)</b>:<br>
@@ -969,12 +1006,12 @@
       <div class="table-card">
         <div class="table-title-group">
           <div>
-            <div class="table-title">🔬 회귀분석 모델 진단 & 통계 지표 (42개월 유럽 20개국 패널 WLS)</div>
-            <div class="table-sub">2023.01 ~ 2026.06 (42M) 실적 기반 · 시간 가중 회귀(WLS) 및 국가/월 고정효과(Country & Month FE) 적용 다변량 Log-Log 계량경제 모형</div>
+            <div class="table-title" id="diagTableTitle">🔬 회귀분석 모델 진단 & 통계 지표 (42개월 유럽 20개국 패널 WLS)</div>
+            <div class="table-sub" id="diagTableSub">2023.01 ~ 2026.06 (42M) 실적 기반 · 시간 가중 회귀(WLS) 및 국가/월 고정효과(Country & Month FE) 적용 다변량 Log-Log 계량경제 모형</div>
           </div>
         </div>
         <table class="styled-table diag-table">
-          <thead>
+          <thead id="diagTableHead">
             <tr>
               <th class="left">제품군 (Segment)</th>
               <th class="diag-tooltip-th" data-name="자체 탄력성 (β₁)" data-meaning="LG 가격 1% 인상 시 판매량 변동률 (자체 가격 민감도)" data-tip="절댓값이 클수록 가격 변동에 민감하게 반응함">자체 탄력성 (β₁) <span class="info-icon">ℹ️</span></th>
@@ -1000,15 +1037,15 @@
           <div class="case-card-header c1">
             <div class="case-indicator c1"></div>
             <div class="case-info">
-              <h4>Case 1 (전 제품 동등 수준 인상)</h4>
-              <p>자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 100% 추종 인상 (상대가격 유지)</p>
+              <h4 id="case_c1_title">Case 1 (전 제품 동등 수준 인상)</h4>
+              <p id="case_c1_sub">자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 100% 추종 인상 (상대가격 유지)</p>
             </div>
           </div>
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">📦 제품군별 판매수량 비교</div>
-                <div class="chart-sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
+                <div class="chart-title" id="chart_c1_title">📦 제품군별 판매수량 비교</div>
+                <div class="chart-sub" id="chart_c1_sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
               </div>
             </div>
             <div class="chart-total-bar" id="totalBadgeC1"></div>
@@ -1023,15 +1060,15 @@
           <div class="case-card-header c2">
             <div class="case-indicator c2"></div>
             <div class="case-info">
-              <h4>Case 2 (OLED 동등 수준, 기타 제품 75% 수준 인상)</h4>
-              <p>자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 75% 추종 인상 (LG 프리미엄 소폭 확대)</p>
+              <h4 id="case_c2_title">Case 2 (OLED 동등 수준, 기타 제품 75% 수준 인상)</h4>
+              <p id="case_c2_sub">자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 75% 추종 인상 (LG 프리미엄 소폭 확대)</p>
             </div>
           </div>
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">📦 제품군별 판매수량 비교</div>
-                <div class="chart-sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
+                <div class="chart-title" id="chart_c2_title">📦 제품군별 판매수량 비교</div>
+                <div class="chart-sub" id="chart_c2_sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
               </div>
             </div>
             <div class="chart-total-bar" id="totalBadgeC2"></div>
@@ -1046,15 +1083,15 @@
           <div class="case-card-header c3">
             <div class="case-indicator c3"></div>
             <div class="case-info">
-              <h4>Case 3 (OLED 동등 수준, 기타 제품 50% 수준 인상)</h4>
-              <p>자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 50% 추종 인상 (LG 가격차 확대 리스크)</p>
+              <h4 id="case_c3_title">Case 3 (OLED 동등 수준, 기타 제품 50% 수준 인상)</h4>
+              <p id="case_c3_sub">자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 50% 추종 인상 (LG 가격차 확대 리스크)</p>
             </div>
           </div>
           <div class="chart-card">
             <div class="chart-header">
               <div>
-                <div class="chart-title">📦 제품군별 판매수량 비교</div>
-                <div class="chart-sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
+                <div class="chart-title" id="chart_c3_title">📦 제품군별 판매수량 비교</div>
+                <div class="chart-sub" id="chart_c3_sub">LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)</div>
               </div>
             </div>
             <div class="chart-total-bar" id="totalBadgeC3"></div>
@@ -1068,10 +1105,10 @@
       <!-- 3. 실증 회귀분석 진단 결과 (유럽 20개국 42M 패널 WLS) -->
       <div class="executive-memo-card">
         <div class="executive-memo-header">
-          <div class="executive-memo-title">
+          <div class="executive-memo-title" id="memoTitle">
             <span>📊</span> 실증 회귀분석 진단 결과 (유럽 20개국 42M 패널 WLS)
           </div>
-          <div class="executive-memo-badge">2027년 1분기 가격 전략 종합 분석</div>
+          <div class="executive-memo-badge" id="memoBadge">2027년 1분기 가격 전략 종합 분석</div>
         </div>
         <div class="executive-memo-body" id="executiveMemoBody">
           <!-- Dynamically populated -->
@@ -2686,25 +2723,184 @@
     let chartVolC2 = null;
     let chartVolC3 = null;
 
+    let currentLang = 'ko';
+
+    const I18N = {
+      ko: {
+        pageTitle: '회귀분석 모델 기반 LG TV 유럽 영업 가격 탄력성 시뮬레이터',
+        headerTitle: '회귀분석 모델 기반 LG TV 유럽 영업 가격 탄력성 시뮬레이터',
+        headerSubtitle: '유럽 20개국 42개월(2023.01~2026.06) 패널 WLS 회귀분석 기반 · 4대 경쟁사 반응 시나리오 동시 비교',
+        themeProjector: '프로젝터 모드',
+        themeDark: '다크 모드',
+        themeTitle: '빔프로젝터용 밝은 모드 / 다크 모드 전환',
+        badgeBaseline: '2026 Q1 Baseline',
+        badgeModel: '42M WLS Model',
+        btnFullscreen: '전체화면',
+        sidebarScopeTitle: '🌍 분석 대상 권역',
+        optCountryAll: '유럽 전체 (20개국 Total)',
+        sidebarSimTitle: '🎚️ LG TV 가격 인상율 시뮬레이션',
+        btnPreset5: '전체 +5%',
+        btnPresetDiff: '차등 인상',
+        btnPreset0: '0% (동결)',
+        segLabels: {
+          'OLED': 'OLED TV',
+          'QNED_MiniLED': 'QNED / MiniLED / NanoCell',
+          'NanoCell_UHD': '일반 UHD 4K',
+          'FHD': 'FHD 이하'
+        },
+        zeroNotice: '⚠️ <b>가격 인상률 0%:</b> 가격 변동이 0%로 설정되어 2026 1Q 실적과 2027 1Q 예측치가 동일합니다. 상단 프리셋 또는 슬라이더를 조정하세요.',
+        sidebarInfoBox: `<b>💡 경쟁사 가격 반응 3대 CASE 규칙</b><br>
+          • <b>OLED</b>: 3개 케이스 모두 LG 인상률과 <b>100% 동등 인상</b><br>
+          • <b>기타 세그먼트 (QNED, UHD, FHD)</b>:<br>
+          &nbsp;&nbsp;<b>Case 1</b>: 100% 동등 인상<br>
+          &nbsp;&nbsp;<b>Case 2</b>: 75% 수준 인상<br>
+          &nbsp;&nbsp;<b>Case 3</b>: 50% 수준 인상<br>
+          • <b>시장 성장률(g<sub>mkt</sub>)</b>: 세그먼트 탄력성 기반 자동 연동 (g<sub>mkt</sub> = β × ΔP<sub>mkt</sub>)`,
+        diagTableTitle: '🔬 회귀분석 모델 진단 & 통계 지표 (42개월 유럽 20개국 패널 WLS)',
+        diagTableSub: '2023.01 ~ 2026.06 (42M) 실적 기반 · 시간 가중 회귀(WLS) 및 국가/월 고정효과(Country & Month FE) 적용 다변량 Log-Log 계량경제 모형',
+        diagColumns: {
+          segment: '제품군 (Segment)',
+          ownElast: { name: '자체 탄력성 (β₁)', meaning: 'LG 가격 1% 인상 시 판매량 변동률 (자체 가격 민감도)', tip: '절댓값이 클수록 가격 변동에 민감하게 반응함' },
+          mktElast: { name: '시장가격 탄력성 (β_mkt)', meaning: '시장 평균가격 1% 변동 시 시장 총수요 변화율', tip: '전체 시장이 동반 인상될 때의 총수요 위축 강도' },
+          crossElast: { name: '경쟁사 교차탄력성 (β_cross)', meaning: '경쟁사 가격 1% 인상 시 LG 판매량 증가율 (상대가격 방어력)', tip: '양수 값이 클수록 경쟁사 인상 시 LG로의 반사이익이 큼' },
+          r2: { name: '설명력 (R²)', meaning: '가격 및 시장 요인이 판매량 변화를 설명하는 비율', tip: '1에 가까울수록 예측력과 모델 적합도가 높음' },
+          dw: { name: '잔차자기상관 (DW)', meaning: '더빈-왓슨 통계량(2.0에 가까울수록 자기상관 없음)', tip: '기존 0.5 수준에서 국가/계절 고정효과로 1.0~1.34로 대폭 개선' },
+          weightedMape: { name: '가중 오차율 (Weighted MAPE)', meaning: '유럽 전체 판매량 가중 절대 오차율', tip: '소형국 왜곡을 배제한 실제 유럽 비즈니스 실질 예측 정밀도' },
+          euTotalMape: { name: '유럽 총합 오차율 (EU Total MAPE)', meaning: '유럽 20개국 합산 판매량의 월별 예측 오차율', tip: '유럽 총괄 영업 의사결정에 직결되는 국가 합산 정밀도' },
+          implications: '회귀 분석 결과 / 가격 전략 시사점'
+        },
+        segDescriptions: {
+          'OLED': '가격 저항이 낮고 경쟁사 동등 수준 인상 예상됨. 가격 인상을 통한 수익성 확보 전략이 유효함',
+          'QNED_MiniLED': '자체 가격 민감도는 높으나 경쟁사 추종 시 수요 유지 예상됨. 삼성 가격 격차 확대를 방어하기 위한 타겟 프로모션 병행이 필요함',
+          'NanoCell_UHD': '가격에 가장 민감한 최대 양산 볼륨군임. 경쟁사 대비 가격차가 확대될 경우 이탈 위험 크므로 보수적 가격 운용 및 채널 리베이트 결합이 필요함',
+          'FHD': '엔트리 고정 교체 수요 중심의 안정적 세그먼트. 출혈경쟁을 지양하고 최소 마진을 확보하는 선에서 판가 운영 전략이 유효함'
+        },
+        cases: {
+          c1: {
+            title: 'Case 1 (전 제품 동등 수준 인상)',
+            sub: '자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 100% 추종 인상 (상대가격 유지)'
+          },
+          c2: {
+            title: 'Case 2 (OLED 동등 수준, 기타 제품 75% 수준 인상)',
+            sub: '자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 75% 추종 인상 (LG 프리미엄 소폭 확대)'
+          },
+          c3: {
+            title: 'Case 3 (OLED 동등 수준, 기타 제품 50% 수준 인상)',
+            sub: '자사 가격 인상율 대비 경쟁사의 가격 인상율: OLED 100% · 기타 세그먼트 50% 추종 인상 (LG 가격차 확대 리스크)'
+          }
+        },
+        chartTitle: '📦 제품군별 판매수량 비교',
+        chartSub: 'LG TV 가격 인상시 예상 판매 수량 (단위: 천 대)',
+        chartUnitK: '천대',
+        chartLegendBase: '가격 동결시',
+        chartLegendSim: '가격 인상시',
+        memoTitle: '실증 회귀분석 진단 결과 (유럽 20개국 42M 패널 WLS)',
+        memoBadge: '2027년 1분기 가격 전략 종합 분석',
+        memoP1: (sign1, c1YoYUnits, sign1E, c1YoYEur, sign2, c2YoYUnits, sign3, c3YoYUnits) => `
+          <p style="margin: 0 0 0.65rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
+            유럽 20개국 42개월 실증 회귀분석(WLS) 결과, <b>OLED TV</b>는 자체 가격 탄력성 <b>-0.68</b>(경쟁사 교차 탄력성 <b>+1.06</b>)로 가격 인상 시에도 경쟁사 추종 시 수요 방어가 용이한 프리미엄 지배력을 입증한 반면, <b>QNED(-1.90, 교차 +2.74)</b>와 <b>일반 UHD(-1.73, 교차 +1.37)</b>는 가격 변동에 극도로 민감한 고탄력성 구조를 보이고 있습니다.
+          </p>
+          <p style="margin: 0 0 0.85rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
+            경쟁사가 동등 수준으로 인상하는 <b>Case 1</b>에서는 상대가격이 유지되어 수요 위축(<b>${sign1}${c1YoYUnits.toFixed(1)}%</b>)을 최소화하며 매출/수익성을 극대화(<b>${sign1E}${c1YoYEur.toFixed(1)}%</b>)할 수 있으나, 경쟁사 추종률이 75%(<b>Case 2</b>), 50%(<b>Case 3</b>), 0% 동결(<b>Case 4</b>)로 낮아질수록 가격차 확대로 인한 LCD 제품군의 판매량 이탈(<b>${sign2}${c2YoYUnits.toFixed(1)}% ~ ${sign3}${c3YoYUnits.toFixed(1)}%</b>) 리스크가 가중되므로, OLED 중심의 수익성 확보와 양산 세그먼트의 타겟 프로모션 결합 전략이 요구됩니다.
+          </p>
+          <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.77rem; line-height: 1.55;">
+            ※ <b>WLS (Weighted Least Squares, 가중최소제곱법) & 패널 고정효과(Fixed Effects)</b>: 유럽 20개국의 42개월간(2023.01~2026.06) 월별 패널 데이터를 기반으로 국가 고정효과(Country FE)와 12개 월 계절성(Month FE)을 통제하고, 최신 트렌드에 가중치(2025~2026년 1.0, 2024년 0.8, 2023년 0.6)를 부여하여 통계적 왜곡(DW ~0.5 및 MAPE ~78%)을 원천 해결한 정밀 추정 모형입니다.
+          </div>
+        `,
+        ttTipBadge: '💡 해석 기준'
+      },
+      en: {
+        pageTitle: 'Econometric Regression-Based LG TV Europe Price Elasticity Simulator',
+        headerTitle: 'Econometric Regression-Based LG TV Europe Price Elasticity Simulator',
+        headerSubtitle: 'Based on 42-Month (2023.01~2026.06) 20-Country Panel WLS · Multi-Scenario Competitor Response Comparison',
+        themeProjector: 'Projector Mode',
+        themeDark: 'Dark Mode',
+        themeTitle: 'Toggle Bright Projector Mode / Dark Mode',
+        badgeBaseline: '2026 Q1 Baseline',
+        badgeModel: '42M WLS Model',
+        btnFullscreen: 'Fullscreen',
+        sidebarScopeTitle: '🌍 Target Market Scope',
+        optCountryAll: 'Europe Total (20 Countries)',
+        sidebarSimTitle: '🎚️ LG TV Price Increase Simulation',
+        btnPreset5: 'Flat +5%',
+        btnPresetDiff: 'Tiered Hike',
+        btnPreset0: '0% (Freeze)',
+        segLabels: {
+          'OLED': 'OLED TV',
+          'QNED_MiniLED': 'QNED / MiniLED / NanoCell',
+          'NanoCell_UHD': 'Standard UHD 4K',
+          'FHD': 'FHD & Below'
+        },
+        zeroNotice: '⚠️ <b>0% Price Change:</b> Prices are held flat (0%), so 2027 Q1 projections match 2026 Q1 baseline. Adjust presets or sliders above.',
+        sidebarInfoBox: `<b>💡 Competitor Reaction Rules across 3 Cases</b><br>
+          • <b>OLED</b>: <b>100% equal price hike</b> matching LG across all 3 cases<br>
+          • <b>Non-OLED Tiers (QNED, UHD, FHD)</b>:<br>
+          &nbsp;&nbsp;<b>Case 1</b>: 100% equal follow rate<br>
+          &nbsp;&nbsp;<b>Case 2</b>: 75% follow rate<br>
+          &nbsp;&nbsp;<b>Case 3</b>: 50% follow rate<br>
+          • <b>Market Contraction (g<sub>mkt</sub>)</b>: Linked to segment elasticity (g<sub>mkt</sub> = β × ΔP<sub>mkt</sub>)`,
+        diagTableTitle: '🔬 Econometric Regression Diagnostics & Statistical Indicators (42-Month 20-Country Panel WLS)',
+        diagTableSub: 'Based on 2023.01~2026.06 (42M) data · Multivariate Log-Log model with Time-Decay WLS and Country & Month Fixed Effects (FE)',
+        diagColumns: {
+          segment: 'Segment',
+          ownElast: { name: 'Own-Price Elasticity (β₁)', meaning: '% change in LG volume per 1% increase in LG price (own price sensitivity)', tip: 'Higher absolute value indicates greater sensitivity to price hikes' },
+          mktElast: { name: 'Market Price Elasticity (β_mkt)', meaning: '% change in total segment market demand per 1% change in market ASP', tip: 'Reflects overall market contraction when industry prices rise simultaneously' },
+          crossElast: { name: 'Cross-Price Elasticity (β_cross)', meaning: '% change in LG volume per 1% increase in competitor ASP (relative price defense)', tip: 'Higher positive value indicates stronger spillover gains when rivals raise prices' },
+          r2: { name: 'R-Squared (R²)', meaning: 'Proportion of volume variance explained by price and market drivers', tip: 'Closer to 1.0 indicates superior explanatory power and goodness of fit' },
+          dw: { name: 'Durbin-Watson (DW)', meaning: 'Durbin-Watson test for residual autocorrelation (ideal = 2.0)', tip: 'Significantly improved to 1.0~1.34 via Country & Month Fixed Effects' },
+          weightedMape: { name: 'Weighted MAPE', meaning: 'Volume-weighted mean absolute percentage error across Europe', tip: 'Reflects true business prediction accuracy, eliminating small-country distortion' },
+          euTotalMape: { name: 'EU Total MAPE', meaning: 'Monthly forecast error on aggregated 20-country European total sales', tip: 'Direct operational accuracy benchmark for Europe Sales Executive decisions' },
+          implications: 'Econometric Findings & Pricing Strategic Implications'
+        },
+        segDescriptions: {
+          'OLED': 'Low price resistance with high competitor price tracking expected. Optimal segment to drive profitability via price hikes.',
+          'QNED_MiniLED': 'High own-price sensitivity but demand holds if competitors follow. Targeted promotions required to prevent widening price gaps vs Samsung.',
+          'NanoCell_UHD': 'Highly price-sensitive core mass volume segment. Substantial defection risk if price premium widens; conservative pricing with channel rebates needed.',
+          'FHD': 'Stable entry replacement demand. Avoid zero-margin price wars and maintain pricing strictly to protect baseline operating margins.'
+        },
+        cases: {
+          c1: {
+            title: 'Case 1 (100% Equal Follow)',
+            sub: 'Competitors follow 100% across OLED and all LCD tiers (Relative price parity maintained)'
+          },
+          c2: {
+            title: 'Case 2 (OLED 100%, Non-OLED 75% Follow)',
+            sub: 'Competitors follow 100% on OLED, 75% on LCD tiers (Mild LG price premium expansion)'
+          },
+          c3: {
+            title: 'Case 3 (OLED 100%, Non-OLED 50% Follow)',
+            sub: 'Competitors follow 100% on OLED, 50% on LCD tiers (Substantial price gap divergence risk)'
+          }
+        },
+        chartTitle: '📦 Sales Volume by Segment',
+        chartSub: 'Projected LG TV Sales Volume (Unit: k units)',
+        chartUnitK: 'k units',
+        chartLegendBase: 'Frozen Price',
+        chartLegendSim: 'Simulated Price',
+        memoTitle: 'Empirical Regression Findings & Executive Strategic Brief (Europe 20-Country 42M Panel WLS)',
+        memoBadge: '2027 Q1 Pricing Strategy Comprehensive Analysis',
+        memoP1: (sign1, c1YoYUnits, sign1E, c1YoYEur, sign2, c2YoYUnits, sign3, c3YoYUnits) => `
+          <p style="margin: 0 0 0.65rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
+            Based on the 42-month European 20-country panel regression (WLS), <b>OLED TV</b> demonstrates a low own-price elasticity of <b>-0.68</b> (cross-price elasticity <b>+1.06</b>), proving formidable premium pricing power where demand remains well-defended as competitors follow price increases. In contrast, <b>QNED (-1.90, cross +2.74)</b> and <b>Standard UHD (-1.73, cross +1.37)</b> exhibit highly price-elastic demand structures that react sharply to price fluctuations.
+          </p>
+          <p style="margin: 0 0 0.85rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
+            Under <b>Case 1</b> where competitors raise prices in tandem, relative price parity is maintained, minimizing volume contraction (<b>${sign1}${c1YoYUnits.toFixed(1)}%</b>) while maximizing revenue and profitability expansion (<b>${sign1E}${c1YoYEur.toFixed(1)}%</b>). However, as competitor tracking decreases to 75% (<b>Case 2</b>), 50% (<b>Case 3</b>), or 0% freeze (<b>Case 4</b>), widening price disparities drive severe volume leakage across LCD segments (<b>${sign2}${c2YoYUnits.toFixed(1)}% ~ ${sign3}${c3YoYUnits.toFixed(1)}%</b>). This necessitates a bifurcated pricing strategy: aggressive margin capture in OLED coupled with targeted promotional shielding for mass-market LCD tiers.
+          </p>
+          <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.77rem; line-height: 1.55;">
+            ※ <b>WLS (Weighted Least Squares) & Panel Fixed Effects Methodology</b>: Robust econometric model estimated across 20 European nations over 42 months (2023.01~2026.06). Incorporates Country Fixed Effects (Country FE) and 12-month seasonality (Month FE) with time-decay weights (2025~2026: 1.0, 2024: 0.8, 2023: 0.6), fundamentally resolving historical statistical distortions (DW ~0.5 and MAPE ~78%).
+          </div>
+        `,
+        ttTipBadge: '💡 Benchmark'
+      }
+    };
+
     const CASE_META = {
-      'c1': { name: 'Case 1 (100% 동등 인상)', color: '#38BDF8', lightColor: '#0284C7', short: 'Case 1' },
-      'c2': { name: 'Case 2 (75% 수준 인상)', color: '#2DD4BF', lightColor: '#0D9488', short: 'Case 2' },
-      'c3': { name: 'Case 3 (50% 수준 인상)', color: '#F59E0B', lightColor: '#D97706', short: 'Case 3' }
+      'c1': { color: '#38BDF8', lightColor: '#0284C7', short: 'Case 1' },
+      'c2': { color: '#2DD4BF', lightColor: '#0D9488', short: 'Case 2' },
+      'c3': { color: '#F59E0B', lightColor: '#D97706', short: 'Case 3' }
     };
 
     const SEG_ORDER = ['OLED', 'QNED_MiniLED', 'NanoCell_UHD', 'FHD'];
-    const SEG_LABELS = {
-      'OLED': 'OLED TV',
-      'QNED_MiniLED': 'QNED / MiniLED / NanoCell',
-      'NanoCell_UHD': '일반 UHD 4K',
-      'FHD': 'FHD 이하'
-    };
-    const SEG_DESCRIPTIONS = {
-      'OLED': '가격 저항이 낮고 경쟁사 동등 수준 인상 예상됨. 가격 인상을 통한 수익성 확보 전략이 유효함',
-      'QNED_MiniLED': '자체 가격 민감도는 높으나 경쟁사 추종 시 수요 유지 예상됨. 삼성 가격 격차 확대를 방어하기 위한 타겟 프로모션 병행이 필요함',
-      'NanoCell_UHD': '가격에 가장 민감한 최대 양산 볼륨군임. 경쟁사 대비 가격차가 확대될 경우 이탈 위험 크므로 보수적 가격 운용 및 채널 리베이트 결합이 필요함',
-      'FHD': '엔트리 고정 교체 수요 중심의 안정적 세그먼트. 출혈경쟁을 지양하고 최소 마진을 확보하는 선에서 판가 운영 전략이 유효함'
-    };
 
     function initCountrySelect() {
       const select = document.getElementById('countrySelect');
@@ -2975,7 +3171,8 @@
     };
 
     function renderCharts(simResults, totalBase, totalCases) {
-      const labels = SEG_ORDER.map(s => SEG_LABELS[s]);
+      const t = I18N[currentLang] || I18N.ko;
+      const labels = SEG_ORDER.map(s => t.segLabels[s]);
       const isDark = document.body.classList.contains('theme-dark');
 
       if (totalBase && totalCases) {
@@ -2992,10 +3189,15 @@
           const el = document.getElementById(id);
           if (!el) return;
           const sign = diffVal > 0 ? '+' : '';
+          const numBase = formatNum(targetBaseK, 1);
+          const numSim = formatNum(simK, 1);
+          const figText = (currentLang === 'en')
+            ? `${numBase} ${t.chartUnitK} → ${numSim} ${t.chartUnitK}`
+            : `${numBase}${t.chartUnitK} → ${numSim}${t.chartUnitK}`;
           el.innerHTML = `
             <div class="chart-total-tag"><span>📊</span> Total</div>
             <div class="chart-total-figures">
-              <span>${formatNum(targetBaseK, 1)}천대 → ${formatNum(simK, 1)}천대</span>
+              <span>${figText}</span>
               <span class="chart-total-rate">(${sign}${diffVal.toFixed(1)}%)</span>
             </div>
           `;
@@ -3051,8 +3253,8 @@
 
       const updateOrCreateChart = (chartInstance, canvasId, simUnits, diffList, caseColor) => {
         const datasets = [
-          { label: '가격 동결시', data: volBase, backgroundColor: baselineBarColor, borderRadius: 4 },
-          { label: '가격 인상시', data: simUnits, backgroundColor: caseColor, borderRadius: 4 }
+          { label: t.chartLegendBase, data: volBase, backgroundColor: baselineBarColor, borderRadius: 4 },
+          { label: t.chartLegendSim, data: simUnits, backgroundColor: caseColor, borderRadius: 4 }
         ];
 
         if (chartInstance) {
@@ -3105,24 +3307,17 @@
       const sign2 = c2YoYUnits > 0 ? '+' : '';
       const sign3 = c3YoYUnits > 0 ? '+' : '';
 
-      container.innerHTML = `
-        <p style="margin: 0 0 0.65rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
-          유럽 20개국 42개월 실증 회귀분석(WLS) 결과, <b>OLED TV</b>는 자체 가격 탄력성 <b>-0.68</b>(경쟁사 교차 탄력성 <b>+1.06</b>)로 가격 인상 시에도 경쟁사 추종 시 수요 방어가 용이한 프리미엄 지배력을 입증한 반면, <b>QNED(-1.90, 교차 +2.74)</b>와 <b>일반 UHD(-1.73, 교차 +1.37)</b>는 가격 변동에 극도로 민감한 고탄력성 구조를 보이고 있습니다.
-        </p>
-        <p style="margin: 0 0 0.85rem 0; color: var(--text-main); font-size: 0.86rem; line-height: 1.7;">
-          경쟁사가 동등 수준으로 인상하는 <b>Case 1</b>에서는 상대가격이 유지되어 수요 위축(<b>${sign1}${c1YoYUnits.toFixed(1)}%</b>)을 최소화하며 매출/수익성을 극대화(<b>${sign1E}${c1YoYEur.toFixed(1)}%</b>)할 수 있으나, 경쟁사 추종률이 75%(<b>Case 2</b>), 50%(<b>Case 3</b>), 0% 동결(<b>Case 4</b>)로 낮아질수록 가격차 확대로 인한 LCD 제품군의 판매량 이탈(<b>${sign2}${c2YoYUnits.toFixed(1)}% ~ ${sign3}${c3YoYUnits.toFixed(1)}%</b>) 리스크가 가중되므로, OLED 중심의 수익성 확보와 양산 세그먼트의 타겟 프로모션 결합 전략이 요구됩니다.
-        </p>
-        <div style="margin-top: 0.85rem; padding-top: 0.65rem; border-top: 1px dashed var(--border-color); color: var(--text-muted); font-size: 0.77rem; line-height: 1.55;">
-          ※ <b>WLS (Weighted Least Squares, 가중최소제곱법) & 패널 고정효과(Fixed Effects)</b>: 유럽 20개국의 42개월간(2023.01~2026.06) 월별 패널 데이터를 기반으로 국가 고정효과(Country FE)와 12개 월 계절성(Month FE)을 통제하고, 최신 트렌드에 가중치(2025~2026년 1.0, 2024년 0.8, 2023년 0.6)를 부여하여 통계적 왜곡(DW ~0.5 및 MAPE ~78%)을 원천 해결한 정밀 추정 모형입니다.
-        </div>
-      `;
+      const t = I18N[currentLang] || I18N.ko;
+      container.innerHTML = t.memoP1(sign1, c1YoYUnits, sign1E, c1YoYEur, sign2, c2YoYUnits, sign3, c3YoYUnits);
     }
 
     function renderDiagnosticsTable() {
       const tbody = document.getElementById('diagnosticsBody');
+      if (!tbody) return;
       tbody.innerHTML = '';
       if (!simData || !simData.models) return;
 
+      const t = I18N[currentLang] || I18N.ko;
       const defaultMktElast = {
         'OLED': -1.0968,
         'QNED_MiniLED': -1.1455,
@@ -3145,7 +3340,7 @@
 
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="left"><b>${SEG_LABELS[seg]}</b></td>
+          <td class="left"><b>${t.segLabels[seg]}</b></td>
           <td style="color: var(--accent-blue); font-weight: 700;">${v.elasticity.toFixed(4)}</td>
           <td style="color: var(--accent-amber); font-weight: 700;">${mktElast.toFixed(4)}</td>
           <td style="color: var(--accent-purple); font-weight: 700;">${(v.cross_elasticity !== undefined ? '+' + v.cross_elasticity.toFixed(4) : (p.ln_comp_asp || 0).toFixed(4))}</td>
@@ -3153,9 +3348,113 @@
           <td>${(v.dw || 0).toFixed(3)}</td>
           <td style="color: var(--primary); font-weight: 700;">${(v.weighted_mape !== undefined ? v.weighted_mape.toFixed(1) + '%' : (v.mape || 0).toFixed(1) + '%')}</td>
           <td style="color: var(--accent-teal); font-weight: 600;">${(v.eu_total_mape !== undefined ? v.eu_total_mape.toFixed(1) + '%' : '-')}</td>
-          <td class="left" style="color: var(--text-muted); font-size: 0.74rem;">${SEG_DESCRIPTIONS[seg]}</td>`;
+          <td class="left" style="color: var(--text-muted); font-size: 0.74rem;">${t.segDescriptions[seg]}</td>`;
         tbody.appendChild(tr);
       });
+    }
+
+    function updateDiagnosticsTableHead(lang) {
+      const thead = document.getElementById('diagTableHead');
+      if (!thead) return;
+      const cols = (I18N[lang] || I18N.ko).diagColumns;
+      thead.innerHTML = `
+        <tr>
+          <th class="left">${cols.segment}</th>
+          <th class="diag-tooltip-th" data-name="${cols.ownElast.name}" data-meaning="${cols.ownElast.meaning}" data-tip="${cols.ownElast.tip}">${cols.ownElast.name} <span class="info-icon">ℹ️</span></th>
+          <th class="diag-tooltip-th" style="color: var(--accent-amber);" data-name="${cols.mktElast.name}" data-meaning="${cols.mktElast.meaning}" data-tip="${cols.mktElast.tip}">${cols.mktElast.name} <span class="info-icon">ℹ️</span></th>
+          <th class="diag-tooltip-th" data-name="${cols.crossElast.name}" data-meaning="${cols.crossElast.meaning}" data-tip="${cols.crossElast.tip}">${cols.crossElast.name} <span class="info-icon">ℹ️</span></th>
+          <th class="diag-tooltip-th" data-name="${cols.r2.name}" data-meaning="${cols.r2.meaning}" data-tip="${cols.r2.tip}">${cols.r2.name} <span class="info-icon">ℹ️</span></th>
+          <th class="diag-tooltip-th" data-name="${cols.dw.name}" data-meaning="${cols.dw.meaning}" data-tip="${cols.dw.tip}">${cols.dw.name} <span class="info-icon">ℹ️</span></th>
+          <th class="diag-tooltip-th" style="color: var(--primary);" data-name="${cols.weightedMape.name}" data-meaning="${cols.weightedMape.meaning}" data-tip="${cols.weightedMape.tip}">${cols.weightedMape.name} <span class="info-icon">ℹ️</span></th>
+          <th class="diag-tooltip-th" style="color: var(--accent-teal);" data-name="${cols.euTotalMape.name}" data-meaning="${cols.euTotalMape.meaning}" data-tip="${cols.euTotalMape.tip}">${cols.euTotalMape.name} <span class="info-icon">ℹ️</span></th>
+          <th class="left">${cols.implications}</th>
+        </tr>
+      `;
+      initTooltips();
+    }
+
+    function setLanguage(lang) {
+      if (lang !== 'ko' && lang !== 'en') lang = 'ko';
+      currentLang = lang;
+      localStorage.setItem('tv_sim_lang', lang);
+
+      const btnKo = document.getElementById('btnLangKo');
+      const btnEn = document.getElementById('btnLangEn');
+      if (btnKo) btnKo.classList.toggle('active', lang === 'ko');
+      if (btnEn) btnEn.classList.toggle('active', lang === 'en');
+
+      const t = I18N[lang];
+      document.title = t.pageTitle;
+
+      const hTitle = document.getElementById('headerTitle');
+      const hSub = document.getElementById('headerSubtitle');
+      const btnFs = document.getElementById('btnFullscreen');
+      if (hTitle) hTitle.innerText = t.headerTitle;
+      if (hSub) hSub.innerText = t.headerSubtitle;
+      if (btnFs) btnFs.innerText = t.btnFullscreen;
+
+      const isDark = document.body.classList.contains('theme-dark');
+      updateThemeButton(isDark ? 'dark' : 'light');
+
+      const badgeBaseline = document.getElementById('badgeBaseline');
+      const badgeModel = document.getElementById('badgeModel');
+      if (badgeBaseline) badgeBaseline.innerText = t.badgeBaseline;
+      if (badgeModel) badgeModel.innerText = t.badgeModel;
+
+      const scopeTitle = document.getElementById('sidebarScopeTitle');
+      const optAll = document.getElementById('optCountryAll');
+      const simTitle = document.getElementById('sidebarSimTitle');
+      const b5 = document.getElementById('btnPreset5');
+      const bDiff = document.getElementById('btnPresetDiff');
+      const b0 = document.getElementById('btnPreset0');
+      const lOled = document.getElementById('lblSegOled');
+      const lQned = document.getElementById('lblSegQned');
+      const lUhd = document.getElementById('lblSegUhd');
+      const lFhd = document.getElementById('lblSegFhd');
+      const zn = document.getElementById('zeroNotice');
+      const infoBox = document.getElementById('sidebarInfoBox');
+
+      if (scopeTitle) scopeTitle.innerText = t.sidebarScopeTitle;
+      if (optAll) optAll.innerText = t.optCountryAll;
+      if (simTitle) simTitle.innerText = t.sidebarSimTitle;
+      if (b5) b5.innerText = t.btnPreset5;
+      if (bDiff) bDiff.innerText = t.btnPresetDiff;
+      if (b0) b0.innerText = t.btnPreset0;
+      if (lOled) lOled.innerText = t.segLabels['OLED'];
+      if (lQned) lQned.innerText = t.segLabels['QNED_MiniLED'];
+      if (lUhd) lUhd.innerText = t.segLabels['NanoCell_UHD'];
+      if (lFhd) lFhd.innerText = t.segLabels['FHD'];
+      if (zn) zn.innerHTML = t.zeroNotice;
+      if (infoBox) infoBox.innerHTML = t.sidebarInfoBox;
+
+      const dtTitle = document.getElementById('diagTableTitle');
+      const dtSub = document.getElementById('diagTableSub');
+      if (dtTitle) dtTitle.innerText = t.diagTableTitle;
+      if (dtSub) dtSub.innerText = t.diagTableSub;
+
+      updateDiagnosticsTableHead(lang);
+
+      ['c1', 'c2', 'c3'].forEach(cKey => {
+        const cTitle = document.getElementById(`case_${cKey}_title`);
+        const cSub = document.getElementById(`case_${cKey}_sub`);
+        const chTitle = document.getElementById(`chart_${cKey}_title`);
+        const chSub = document.getElementById(`chart_${cKey}_sub`);
+        if (cTitle) cTitle.innerText = t.cases[cKey].title;
+        if (cSub) cSub.innerText = t.cases[cKey].sub;
+        if (chTitle) chTitle.innerText = t.chartTitle;
+        if (chSub) chSub.innerText = t.chartSub;
+      });
+
+      const mTitle = document.getElementById('memoTitle');
+      const mBadge = document.getElementById('memoBadge');
+      if (mTitle) mTitle.innerHTML = `<span>📊</span> ${t.memoTitle}`;
+      if (mBadge) mBadge.innerText = t.memoBadge;
+
+      window.dispatchEvent(new CustomEvent('dashboardLanguageChanged', {
+        detail: { lang, title: t.pageTitle }
+      }));
+
+      updateSimulation();
     }
 
     function toggleTheme() {
@@ -3169,13 +3468,16 @@
     function updateThemeButton(theme) {
       const icon = document.getElementById('themeIcon');
       const text = document.getElementById('themeText');
+      const btn = document.getElementById('btnThemeToggle');
+      const t = I18N[currentLang] || I18N.ko;
       if (theme === 'dark') {
         if (icon) icon.innerText = '🌙';
-        if (text) text.innerText = '다크 모드';
+        if (text) text.innerText = t.themeDark;
       } else {
         if (icon) icon.innerText = '☀️';
-        if (text) text.innerText = '프로젝터 모드';
+        if (text) text.innerText = t.themeProjector;
       }
+      if (btn) btn.title = t.themeTitle;
     }
 
     function initTheme() {
@@ -3199,6 +3501,7 @@
           const name = th.getAttribute('data-name') || '';
           const meaning = th.getAttribute('data-meaning') || '';
           const tip = th.getAttribute('data-tip') || '';
+          const tipBadge = (I18N[currentLang] || I18N.ko).ttTipBadge;
 
           tooltip.innerHTML = `
             <div class="diag-tt-header">
@@ -3207,7 +3510,7 @@
             </div>
             <div class="diag-tt-meaning">${meaning}</div>
             <div class="diag-tt-tip">
-              <span class="diag-tt-tip-badge">💡 해석 기준</span>
+              <span class="diag-tt-tip-badge">${tipBadge}</span>
               <span>${tip}</span>
             </div>
           `;
@@ -3232,23 +3535,31 @@
           tooltip.classList.remove('visible');
         };
 
-        th.addEventListener('mouseenter', show);
-        th.addEventListener('mouseleave', hide);
-        th.addEventListener('focus', show);
-        th.addEventListener('blur', hide);
+        th.onmouseenter = show;
+        th.onmouseleave = hide;
+        th.onfocus = show;
+        th.onblur = hide;
       });
 
-      window.addEventListener('scroll', () => {
-        tooltip.classList.remove('visible');
-      }, { passive: true });
+      if (!window._tooltipScrollBound) {
+        window.addEventListener('scroll', () => {
+          tooltip.classList.remove('visible');
+        }, { passive: true });
+        window._tooltipScrollBound = true;
+      }
     }
 
     // Init
     window.addEventListener('DOMContentLoaded', () => {
       initTheme();
       initCountrySelect();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlLang = urlParams.get('lang');
+      const initialLang = (urlLang === 'en' || urlLang === 'ko') ? urlLang : (localStorage.getItem('tv_sim_lang') || 'ko');
+
+      setLanguage(initialLang);
       onSliderChange();
-      initTooltips();
     });
   </script>
   <div id="diagTooltip"></div>
