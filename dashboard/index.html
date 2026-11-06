@@ -1,11 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
+    <script src="auth-guard.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>회귀분석 모델 기반 LG TV 유럽 영업 가격 탄력성 시뮬레이터</title>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <!-- Portal Unified Smart TopBar -->
+  <script src="portal-topbar.js"></script>
   <style>
     :root {
       /* Default: Projector-Optimized High-Contrast Light Theme */
@@ -3376,7 +3379,10 @@
     function setLanguage(lang) {
       if (lang !== 'ko' && lang !== 'en') lang = 'ko';
       currentLang = lang;
-      localStorage.setItem('tv_sim_lang', lang);
+      try {
+        localStorage.setItem('portal_lang', lang);
+        localStorage.setItem('tv_sim_lang', lang);
+      } catch (e) {}
 
       const btnKo = document.getElementById('btnLangKo');
       const btnEn = document.getElementById('btnLangEn');
@@ -3456,6 +3462,14 @@
 
       updateSimulation();
     }
+
+    window.setLanguage = setLanguage;
+
+    window.addEventListener('message', (e) => {
+      if (e.data && e.data.type === 'PORTAL_LANG_CHANGE') {
+        setLanguage(e.data.lang);
+      }
+    });
 
     function toggleTheme() {
       const isDark = document.body.classList.toggle('theme-dark');
@@ -3556,7 +3570,9 @@
 
       const urlParams = new URLSearchParams(window.location.search);
       const urlLang = urlParams.get('lang');
-      const initialLang = (urlLang === 'en' || urlLang === 'ko') ? urlLang : (localStorage.getItem('tv_sim_lang') || 'ko');
+      const initialLang = (urlLang === 'en' || urlLang === 'ko') 
+        ? urlLang 
+        : (localStorage.getItem('portal_lang') || localStorage.getItem('tv_sim_lang') || 'ko');
 
       setLanguage(initialLang);
       onSliderChange();

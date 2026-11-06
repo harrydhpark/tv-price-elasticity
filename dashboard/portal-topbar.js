@@ -143,7 +143,7 @@
       const backText = topBar.querySelector('#portal-back-text');
       const titleText = topBar.querySelector('#portal-title-text');
       if (backText) {
-        backText.innerText = (lang === 'en') ? 'Return to Portal' : '포탈로 돌아가기';
+        backText.innerText = (lang === 'en') ? 'Back to Portal' : '포탈로 돌아가기';
       }
       if (titleText && customTitle) {
         titleText.innerText = customTitle;
@@ -157,8 +157,14 @@
       }
     });
 
+    window.addEventListener('message', function (e) {
+      if (e.data && e.data.type === 'PORTAL_LANG_CHANGE') {
+        updateTopbarLanguage(e.data.lang);
+      }
+    });
+
     // Check initial language preference
-    const initialLang = (new URLSearchParams(window.location.search).get('lang') || localStorage.getItem('tv_sim_lang') || 'ko');
+    const initialLang = (new URLSearchParams(window.location.search).get('lang') || localStorage.getItem('portal_lang') || localStorage.getItem('tv_sim_lang') || 'ko');
     if (initialLang === 'en') {
       updateTopbarLanguage('en');
     }
